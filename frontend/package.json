@@ -33,15 +33,11 @@
     "docx-preview": "^0.3.6",
     "lucide-angular": "^0.294.0",
     "postcss": "^8.4.0",
-<<<<<<< HEAD
     "rxjs": "~7.8.0",
     "tailwindcss": "^3.3.0",
     "tslib": "^2.3.0",
-    "zone.js": "~0.14.2"
-=======
-    "lucide-angular": "^0.294.0",
+    "zone.js": "~0.14.2",
     "jsencrypt": "^3.3.2"
->>>>>>> 94de4f98bb6207cc844d06e6ee8c165b44039b3c
   },
   "devDependencies": {
     "@angular-devkit/build-angular": "^17.0.0",
