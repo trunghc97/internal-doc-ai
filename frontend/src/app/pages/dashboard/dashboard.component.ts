@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { FileSizePipe } from '../../shared/pipes/file-size.pipe';
 import { ApiService, DocumentMetadata, ShareRequest, PaginatedResponse } from '../../services/api.service';
 import { NotificationService } from '../../services/notification.service';
+import { AuthService } from '../../services/auth.service';
 import {
   ButtonComponent,
   CardComponent,
@@ -165,7 +166,8 @@ export class DashboardComponent implements OnInit {
 
   constructor(
     private apiService: ApiService,
-    private notificationService: NotificationService
+    private notificationService: NotificationService,
+    private authService: AuthService
   ) {
     this.filterDocuments();
   }
@@ -785,6 +787,20 @@ export class DashboardComponent implements OnInit {
   // Phương thức đếm số phòng ban
   getDepartmentCount(): number {
     return [...new Set(this.users.map(user => user.department))].length;
+  }
+
+  // Logout method
+  logout(): void {
+    this.authService.logout();
+    this.notificationService.success(
+      'Đăng xuất thành công',
+      'Bạn đã đăng xuất khỏi hệ thống.'
+    );
+  }
+
+  // Get current user info
+  get currentUser() {
+    return this.authService.user;
   }
 
   // Phương thức đếm số lượng tài liệu có rủi ro (sensitivityScore > 70)

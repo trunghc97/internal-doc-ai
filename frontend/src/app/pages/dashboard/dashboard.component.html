@@ -1,10 +1,43 @@
 <div class="container mx-auto px-4 py-8">
   <!-- Notification Container -->
   <app-notification-container></app-notification-container>
-  <!-- Tiêu đề -->
-  <div class="mb-8">
-    <h1 class="text-3xl font-bold text-gray-900">Quản lý văn bản nội bộ</h1>
-    <p class="mt-2 text-gray-600">Hệ thống quản lý và phân tích văn bản với AI</p>
+  <!-- Header với nút đăng xuất -->
+  <div class="mb-8 flex justify-between items-start">
+    <div>
+      <h1 class="text-3xl font-bold text-gray-900">Quản lý văn bản nội bộ</h1>
+      <p class="mt-2 text-gray-600">Hệ thống quản lý và phân tích văn bản với AI</p>
+    </div>
+    
+    <!-- User Info & Logout -->
+    <div class="flex items-center space-x-4">
+      <!-- User Info -->
+      <div *ngIf="currentUser" class="text-right">
+        <p class="text-sm font-medium text-gray-900">{{currentUser.username}}</p>
+        <p class="text-xs text-gray-500">{{currentUser.email}}</p>
+      </div>
+      
+      <!-- User Avatar -->
+      <div class="flex-shrink-0">
+        <div class="h-10 w-10 rounded-full bg-gray-300 flex items-center justify-center">
+          <span class="text-sm font-medium text-gray-700">
+            {{currentUser?.username?.charAt(0)?.toUpperCase() || 'U'}}
+          </span>
+        </div>
+      </div>
+      
+      <!-- Logout Button -->
+      <app-button
+        [variant]="'outline'"
+        [size]="'sm'"
+        (click)="logout()"
+        class="flex items-center"
+      >
+        <svg class="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+        </svg>
+        Đăng xuất
+      </app-button>
+    </div>
   </div>
 
   <!-- Tab Navigation -->
@@ -298,9 +331,9 @@
               </div>
             </div>
           </div>
-        </app-card-content>
-      </app-card>
-    </div>
+      </app-card-content>
+    </app-card>
+  </div>
 
     <!-- User Search and Actions -->
     <div class="mb-6">

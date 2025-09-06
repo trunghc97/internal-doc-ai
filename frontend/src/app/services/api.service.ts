@@ -96,7 +96,7 @@ export interface PaginatedResponse<T> {
   providedIn: 'root'
 })
 export class ApiService {
-  private baseUrl = 'http://192.168.100.133';
+  private baseUrl = 'http://192.168.100.133:8080';
   private llmBaseUrl = 'http://192.168.0.63';
 
   constructor(
