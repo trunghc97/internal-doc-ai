@@ -54,7 +54,7 @@ import { Component, Input, Output, EventEmitter } from '@angular/core';
     ],
 })
 export class ButtonComponent {
-  @Input() variant: 'default' | 'destructive' | 'outline' | 'secondary' | 'ghost' | 'link' = 'default';
+  @Input() variant: 'default' | 'primary' | 'success' | 'warning' | 'danger' | 'info' | 'destructive' | 'outline' | 'secondary' | 'ghost' | 'link' = 'default';
   @Input() size: 'default' | 'sm' | 'lg' | 'icon' = 'default';
   @Input() isLoading = false;
   @Input() disabled = false;
@@ -67,11 +67,16 @@ export class ButtonComponent {
     const baseClasses = 'inline-flex items-center justify-center rounded-lg text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-500 disabled:pointer-events-none disabled:opacity-50';
 
     const variantClasses = {
-      default: 'bg-blue-600 text-white shadow hover:bg-blue-700',
+      default: 'bg-gray-600 text-white shadow hover:bg-gray-700',
+      primary: 'bg-blue-600 text-white shadow hover:bg-blue-700',
+      success: 'bg-green-600 text-white shadow hover:bg-green-700',
+      warning: 'bg-yellow-600 text-white shadow hover:bg-yellow-700',
+      danger: 'bg-red-600 text-white shadow hover:bg-red-700',
+      info: 'bg-cyan-600 text-white shadow hover:bg-cyan-700',
       destructive: 'bg-red-600 text-white shadow-sm hover:bg-red-700',
-      outline: 'border border-gray-300 bg-transparent shadow-sm hover:bg-blue-100 hover:text-blue-600',
-      secondary: 'bg-blue-100 text-blue-600 shadow-sm hover:bg-blue-200',
-      ghost: 'hover:bg-blue-100 hover:text-blue-600',
+      outline: 'border border-gray-300 bg-transparent shadow-sm hover:bg-gray-100 hover:text-gray-900',
+      secondary: 'bg-gray-100 text-gray-900 shadow-sm hover:bg-gray-200',
+      ghost: 'text-gray-600 hover:bg-gray-100 hover:text-gray-900',
       link: 'text-blue-600 underline-offset-4 hover:underline'
     };
 

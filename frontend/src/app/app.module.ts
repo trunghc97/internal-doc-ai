@@ -17,7 +17,8 @@ import {
   CardContentComponent,
   CardFooterComponent,
   InputComponent,
-  BadgeComponent
+  BadgeComponent,
+  FileUploadComponent
 } from './components/atoms';
 
 // Molecules components
@@ -39,10 +40,6 @@ import { NavbarComponent } from './components/organisms/navbar.component';
     // Atoms components
     CardFooterComponent,
     // Molecules components
-    FormFieldComponent,
-    FormLabelComponent,
-    FormDescriptionComponent,
-    FormMessageComponent,
     ChatbotLlmComponent,
     // Organisms components
     NavbarComponent
@@ -62,6 +59,8 @@ import { NavbarComponent } from './components/organisms/navbar.component';
     PointsCardComponent,
     ButtonComponent,
     InputComponent,
+    FileUploadComponent,
+    FormFieldComponent
   ],
   providers: [
     {

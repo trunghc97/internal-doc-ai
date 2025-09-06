@@ -63,7 +63,7 @@
           <p class="text-lg font-semibold {{ transaction.color }}">
             {{ transaction.formattedAmount }}
           </p>
-          <app-badge [variant]="transaction.status === 'success' ? 'success' : 'destructive'">
+          <app-badge>
             {{ transaction.status === 'success' ? 'Thành công' : 'Thất bại' }}
           </app-badge>
         </div>
