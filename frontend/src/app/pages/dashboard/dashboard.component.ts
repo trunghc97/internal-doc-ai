@@ -87,7 +87,86 @@ export class DashboardComponent {
   searchTerm: string = '';
   statusFilter: string = '';
   timeFilter: string = '';
-  filteredDocuments: Document[] = [];
+  filteredDocuments: Document[] = [
+    {
+      id: 'doc-001',
+      name: 'employee_contract.docx',
+      size: 24576,
+      uploadTime: new Date('2025-09-05T09:15:00'),
+      status: 'completed',
+      type: 'docx',
+      securityLevel: 'confidential',
+      department: 'HR',
+      notes: 'Contains employee personal data',
+      sensitivityScore: 87,
+      findings: [
+        {
+          type: 'PII',
+          description: 'Detected phone number',
+          page: 2,
+          paragraph: 3
+        },
+        {
+          type: 'PII',
+          description: 'Detected national ID',
+          page: 3,
+          paragraph: 1
+        }
+      ]
+    },
+    {
+      id: 'doc-002',
+      name: 'financial_report_q2.xlsx',
+      size: 102400,
+      uploadTime: new Date('2025-09-04T15:30:00'),
+      status: 'analyzing',
+      type: 'xlsx',
+      securityLevel: 'high',
+      department: 'Finance',
+      sensitivityScore: undefined
+    },
+    {
+      id: 'doc-003',
+      name: 'internal_policy.pdf',
+      size: 52300,
+      uploadTime: new Date('2025-09-03T11:00:00'),
+      status: 'completed',
+      type: 'pdf',
+      securityLevel: 'medium',
+      department: 'Operations',
+      findings: [
+        {
+          type: 'policy',
+          description: 'Sensitive compliance policy content',
+          page: 5,
+          paragraph: 2
+        }
+      ]
+    },
+    {
+      id: 'doc-004',
+      name: 'marketing_plan_2026.docx',
+      size: 33450,
+      uploadTime: new Date('2025-09-01T08:45:00'),
+      status: 'error',
+      type: 'docx',
+      securityLevel: 'low',
+      department: 'Marketing',
+      notes: 'Upload failed due to corrupted file.'
+    },
+    {
+      id: 'doc-005',
+      name: 'customer_feedback.docx',
+      size: 28900,
+      uploadTime: new Date('2025-09-06T10:12:00'),
+      status: 'completed',
+      type: 'docx',
+      securityLevel: 'medium',
+      department: 'Customer Service',
+      sensitivityScore: 45,
+      findings: []
+    }
+  ];
 
   onFilesSelected(files: File[]) {
     this.selectedFiles = files;
@@ -227,5 +306,102 @@ export class DashboardComponent {
       }
       this.filterDocuments();
     }
+  }
+
+  // Phương thức đếm số lượng tài liệu theo trạng thái
+  getDocumentCountByStatus(status: string): number {
+    return this.documents.filter(doc => doc.status === status).length;
+  }
+
+  // Phương thức đếm số lượng tài liệu có rủi ro (sensitivityScore > 70)
+  getDocumentsWithRisk(): number {
+    return this.documents.filter(doc => 
+      doc.status === 'completed' && 
+      doc.sensitivityScore && 
+      doc.sensitivityScore > 70
+    ).length;
+  }
+
+  // Phương thức lấy thống kê theo phòng ban
+  getDepartmentStats(): Array<{department: string, count: number}> {
+    const stats = new Map<string, number>();
+    
+    this.documents.forEach(doc => {
+      if (doc.department) {
+        stats.set(doc.department, (stats.get(doc.department) || 0) + 1);
+      }
+    });
+
+    return Array.from(stats.entries()).map(([department, count]) => ({
+      department,
+      count
+    }));
+  }
+
+  // Phương thức lấy tên phòng ban hiển thị
+  getDepartmentName(code: string): string {
+    const departments = {
+      'hr': 'Nhân sự',
+      'finance': 'Tài chính',
+      'tech': 'Kỹ thuật',
+      'sales': 'Kinh doanh',
+      'other': 'Khác'
+    };
+    return departments[code as keyof typeof departments] || code;
+  }
+
+  // Phương thức tính phần trăm
+  getPercentage(count: number): number {
+    if (this.documents.length === 0) return 0;
+    return Math.round((count / this.documents.length) * 100);
+  }
+
+  // Phương thức lấy tên loại văn bản
+  getDocumentTypeName(type: string): string {
+    const types = {
+      'contract': 'Hợp đồng',
+      'report': 'Báo cáo',
+      'policy': 'Chính sách',
+      'other': 'Khác'
+    };
+    return types[type as keyof typeof types] || type;
+  }
+
+  // Phương thức lấy tên mức độ bảo mật
+  getSecurityLevelName(level: string): string {
+    const levels = {
+      'public': 'Công khai',
+      'internal': 'Nội bộ',
+      'confidential': 'Bảo mật',
+      'top_secret': 'Tối mật'
+    };
+    return levels[level as keyof typeof levels] || level;
+  }
+
+  // Phương thức lấy variant cho mức độ bảo mật
+  getSecurityLevelVariant(level: string): string {
+    const variants = {
+      'public': 'success',
+      'internal': 'info',
+      'confidential': 'warning',
+      'top_secret': 'danger'
+    };
+    return variants[level as keyof typeof variants] || 'default';
+  }
+
+  // Phương thức lấy class cho thanh mức độ nhạy cảm
+  getSensitivityScoreClass(score: number): string {
+    if (score >= 80) return 'bg-red-500';
+    if (score >= 60) return 'bg-orange-500';
+    if (score >= 40) return 'bg-yellow-500';
+    return 'bg-green-500';
+  }
+
+  // Phương thức lấy class cho text mức độ nhạy cảm
+  getSensitivityTextClass(score: number): string {
+    if (score >= 80) return 'text-red-600 font-medium';
+    if (score >= 60) return 'text-orange-600 font-medium';
+    if (score >= 40) return 'text-yellow-600 font-medium';
+    return 'text-green-600 font-medium';
   }
 }

@@ -5,9 +5,101 @@
     <p class="mt-2 text-gray-600">Hệ thống quản lý và phân tích văn bản với AI</p>
   </div>
 
+  <!-- Bảng thống kê tài liệu -->
+  <div class="mb-8">
+    <app-card>
+      <app-card-header>
+        <app-card-title>Thống kê tài liệu</app-card-title>
+      </app-card-header>
+      <app-card-content>
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <!-- Tổng số tài liệu -->
+          <div class="bg-white p-6 rounded-lg border border-gray-200">
+            <div class="flex items-center">
+              <div class="p-3 rounded-full bg-blue-100">
+                <svg class="h-8 w-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+              </div>
+              <div class="ml-4">
+                <h2 class="text-gray-600 text-sm">Tổng số tài liệu</h2>
+                <p class="text-2xl font-semibold text-gray-900">{{documents.length}}</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Đang phân tích -->
+          <div class="bg-white p-6 rounded-lg border border-gray-200">
+            <div class="flex items-center">
+              <div class="p-3 rounded-full bg-yellow-100">
+                <svg class="h-8 w-8 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <div class="ml-4">
+                <h2 class="text-gray-600 text-sm">Đang phân tích</h2>
+                <p class="text-2xl font-semibold text-gray-900">{{getDocumentCountByStatus('analyzing')}}</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Hoàn thành -->
+          <div class="bg-white p-6 rounded-lg border border-gray-200">
+            <div class="flex items-center">
+              <div class="p-3 rounded-full bg-green-100">
+                <svg class="h-8 w-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <div class="ml-4">
+                <h2 class="text-gray-600 text-sm">Hoàn thành</h2>
+                <p class="text-2xl font-semibold text-gray-900">{{getDocumentCountByStatus('completed')}}</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Có rủi ro -->
+          <div class="bg-white p-6 rounded-lg border border-gray-200">
+            <div class="flex items-center">
+              <div class="p-3 rounded-full bg-red-100">
+                <svg class="h-8 w-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+              </div>
+              <div class="ml-4">
+                <h2 class="text-gray-600 text-sm">Có rủi ro</h2>
+                <p class="text-2xl font-semibold text-gray-900">{{getDocumentsWithRisk()}}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Biểu đồ phân bố theo phòng ban -->
+        <div class="mt-8">
+          <h3 class="text-lg font-medium text-gray-900 mb-4">Phân bố theo phòng ban</h3>
+          <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
+            <div *ngFor="let dept of getDepartmentStats()" class="bg-white p-4 rounded-lg border border-gray-200">
+              <h4 class="text-sm font-medium text-gray-600">{{getDepartmentName(dept.department)}}</h4>
+              <p class="text-2xl font-semibold text-gray-900 mt-1">{{dept.count}}</p>
+              <div class="mt-2 flex items-center text-sm">
+                <span class="text-gray-500">{{getPercentage(dept.count)}}%</span>
+                <div class="ml-2 flex-1 bg-gray-200 rounded-full h-2">
+                  <div
+                    class="bg-blue-500 h-2 rounded-full"
+                    [style.width.%]="getPercentage(dept.count)"
+                  ></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </app-card-content>
+    </app-card>
+  </div>
+
   <!-- Thanh tìm kiếm và lọc -->
   <div class="mb-6">
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+    <div>
       <div class="col-span-1">
         <app-input
           [placeholder]="'Tìm kiếm văn bản...'"
@@ -164,10 +256,19 @@
                       Tên file
                     </th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Thời gian
+                      Loại văn bản
+                    </th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Phòng ban
+                    </th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Mức độ bảo mật
                     </th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Trạng thái
+                    </th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Mức độ rủi ro
                     </th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Thao tác
@@ -175,7 +276,7 @@
                   </tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200">
-                  <tr *ngFor="let doc of filteredDocuments">
+                  <tr *ngFor="let doc of filteredDocuments" class="hover:bg-gray-50">
                     <td class="px-6 py-4 whitespace-nowrap">
                       <div class="flex items-center">
                         <div class="flex-shrink-0 h-10 w-10 flex items-center justify-center bg-gray-100 rounded-lg">
@@ -187,40 +288,103 @@
                           <div class="text-sm font-medium text-gray-900">
                             {{doc.name}}
                           </div>
-                          <div class="text-sm text-gray-500">
-                            {{doc.size | fileSize}}
+                          <div class="text-xs text-gray-500 mt-1">
+                            <span class="inline-flex items-center">
+                              <svg class="h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                              </svg>
+                              {{doc.uploadTime | date:'short'}}
+                            </span>
+                            <span class="inline-flex items-center ml-3">
+                              <svg class="h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4" />
+                              </svg>
+                              {{doc.size | fileSize}}
+                            </span>
                           </div>
                         </div>
                       </div>
                     </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {{doc.uploadTime | date:'short'}}
+                    <td class="px-6 py-4 whitespace-nowrap">
+                      <app-badge
+                        [variant]="'primary'"
+                        [type]="'soft'"
+                        [size]="'sm'"
+                      >
+                        {{getDocumentTypeName(doc.type)}}
+                      </app-badge>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                      <app-badge
+                        [variant]="'info'"
+                        [type]="'soft'"
+                        [size]="'sm'"
+                      >
+                        {{getDepartmentName(doc.department)}}
+                      </app-badge>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                      <app-badge
+                        [type]="'soft'"
+                        [size]="'sm'"
+                      >
+                        {{getSecurityLevelName(doc.securityLevel)}}
+                      </app-badge>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">
                       <app-badge
                         [variant]="doc.status === 'analyzing' ? 'warning' : doc.status === 'completed' ? 'success' : 'error'"
                         [type]="'soft'"
-                        [size]="'md'"
+                        [size]="'sm'"
                       >
                         {{doc.status === 'analyzing' ? 'Đang phân tích' : doc.status === 'completed' ? 'Hoàn thành' : 'Lỗi'}}
                       </app-badge>
                     </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm">
-                      <div class="flex space-x-2">
+                    <td class="px-6 py-4 whitespace-nowrap">
+                      <div *ngIf="doc.status === 'completed'" class="flex items-center">
+                        <div class="flex-1 h-2 bg-gray-200 rounded-full">
+                          <div
+                            class="h-2 rounded-full"
+                            [style.width.%]="doc.sensitivityScore"
+                          ></div>
+                        </div>
+                        <span class="ml-2 text-sm" >
+                          {{doc.sensitivityScore}}%
+                        </span>
+                      </div>
+                      <span *ngIf="doc.status !== 'completed'" class="text-gray-400 text-sm">
+                        --
+                      </span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                      <div class="flex justify-end space-x-2">
                         <app-button
                           [variant]="'ghost'"
+                          [size]="'sm'"
                           (click)="viewResults(doc)"
                         >
-                          Xem kết quả
+                          <svg class="h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                          </svg>
+                          Chi tiết
                         </app-button>
                         <app-button
-                          [variant]="'ghost'"
                           [variant]="'destructive'"
+                          [size]="'sm'"
                           (click)="deleteDocument(doc)"
                         >
+                          <svg class="h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                          </svg>
                           Xóa
                         </app-button>
                       </div>
+                    </td>
+                  </tr>
+                  <tr *ngIf="filteredDocuments.length === 0">
+                    <td colspan="7" class="px-6 py-10 text-center text-gray-500">
+                      Không có văn bản nào
                     </td>
                   </tr>
                 </tbody>
