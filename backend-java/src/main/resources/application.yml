@@ -25,7 +25,7 @@ jwt:
   expiration: 86400000 # 24 hours
 
 rsa:
-  # Đây là một test key, trong môi trường production nên sử dụng key an toàn hơn
+  # Private key
   private-key-value: |
     -----BEGIN PRIVATE KEY-----
     MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQCR7Kd8qcLhJl3q
@@ -55,6 +55,18 @@ rsa:
     h3ZQpHdJQYPPZwCj5mRdB/kK6DUjR4kJ3Kz1B6oPs5Dm3kvhsE+che+ARU2N2yEB
     TqXh1FWiWvQwFQELxUQ0JuE=
     -----END PRIVATE KEY-----
+
+  # Public key
+  public-key-value: |
+    -----BEGIN PUBLIC KEY-----
+    MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAkeynfKnC4SZd6kQRNB4B
+    oUYM1XOlKcgah/RTcE0MWeMtIT1zkF1dLRS2EXaBpTe4MYcJPM1hwYQsWavCpPwd
+    +SWKji/FhIYx4cVmRl34gb0f0tAJsFBpc6sUFrmRxlysw9l10WmZORypS/p6ie3V
+    4xjx83ys1eztH0CcNPuSrNy4RlGT0Mo+1IvshzV3ys/UKecBuQtI2XdSz9EJKgyy
+    48B15tEqoakE4FmhoD2ISNFq8l0tWF7Z94gXKg+SKS2jtQYHw4VtciRkA9UHEOlc
+    x8F2xkX+3TfGagyxkRAbuj2AYajzRjxQhl/aUBbxxKhiByaiQVT6/CnFSpAfqs9U
+    HwIDAQAB
+    -----END PUBLIC KEY-----
 
 logging:
   level:
