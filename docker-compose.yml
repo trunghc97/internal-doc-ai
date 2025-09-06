@@ -26,7 +26,6 @@ services:
       - SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT=org.hibernate.dialect.PostgreSQLDialect
       - CORS_ALLOWED_ORIGINS=http://localhost:3000
       - JWT_SECRET=c9c1b2f3e4a5d6b7c8a9e0f1d2c3b4a5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1
-      - BLOCKCHAIN_API_URL=http://localhost:8081
     depends_on:
       - postgres
     networks:

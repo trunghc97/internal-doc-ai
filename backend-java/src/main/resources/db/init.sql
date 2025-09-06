@@ -1,0 +1,97 @@
+-- Tạo bảng users
+CREATE TABLE IF NOT EXISTS users (
+    id BIGSERIAL PRIMARY KEY,
+    username VARCHAR(50) NOT NULL UNIQUE,
+    password VARCHAR(255) NOT NULL,
+    email VARCHAR(100) NOT NULL UNIQUE,
+    role VARCHAR(20) NOT NULL,
+    enabled BOOLEAN NOT NULL DEFAULT true,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Tạo bảng documents
+CREATE TABLE IF NOT EXISTS documents (
+    id BIGSERIAL PRIMARY KEY,
+    filename VARCHAR(255) NOT NULL,
+    content TEXT,
+    mime_type VARCHAR(100) NOT NULL,
+    file_size BIGINT NOT NULL,
+    sensitive_info TEXT,
+    user_id BIGINT NOT NULL REFERENCES users(id),
+    uploaded_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    last_modified_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Tạo index cho tìm kiếm
+CREATE INDEX IF NOT EXISTS idx_documents_user_id ON documents(user_id);
+CREATE INDEX IF NOT EXISTS idx_documents_filename ON documents(filename);
+CREATE INDEX IF NOT EXISTS idx_users_username ON users(username);
+CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
+
+-- Insert demo users với password đã được mã hóa bằng BCrypt
+-- 1. admin@docai.com / Admin@123
+INSERT INTO users (username, password, email, role, enabled)
+VALUES (
+    'admin',
+    '$2a$10$3Psr4lxW3h4oVvZ8Ens.p.cXMjQqvuFzJ5ixDGVaE7YwVYhKptZJy',
+    'admin@docai.com',
+    'ADMIN',
+    true
+) ON CONFLICT (username) DO NOTHING;
+
+-- 2. manager@docai.com / Manager@123
+INSERT INTO users (username, password, email, role, enabled)
+VALUES (
+    'manager',
+    '$2a$10$YF5FxWTH9ZL5S.znGD7Qr.2vwKGYrWUXM1tDxQB6QGvHJEKbrj.Uy',
+    'manager@docai.com',
+    'ADMIN',
+    true
+) ON CONFLICT (username) DO NOTHING;
+
+-- 3. user1@docai.com / User@123
+INSERT INTO users (username, password, email, role, enabled)
+VALUES (
+    'user1',
+    '$2a$10$QlTVxzCGQWrPkVYLgJqQeOI0DYbYRUYVQIyVpnqQqeWFPVQPjnE8.',
+    'user1@docai.com',
+    'USER',
+    true
+) ON CONFLICT (username) DO NOTHING;
+
+-- 4. user2@docai.com / User@456
+INSERT INTO users (username, password, email, role, enabled)
+VALUES (
+    'user2',
+    '$2a$10$8.UnVuG9HHgffUDAlk8qfOuVGkqRzgVymGe07xd00DMxs.AQubh4a',
+    'user2@docai.com',
+    'USER',
+    true
+) ON CONFLICT (username) DO NOTHING;
+
+-- 5. user3@docai.com / User@789
+INSERT INTO users (username, password, email, role, enabled)
+VALUES (
+    'user3',
+    '$2a$10$YF5FxWTH9ZL5S.znGD7Qr.2vwKGYrWUXM1tDxQB6QGvHJEKbrj.Uy',
+    'user3@docai.com',
+    'USER',
+    true
+) ON CONFLICT (username) DO NOTHING;
+
+-- Tạo function để tự động cập nhật last_modified_at
+CREATE OR REPLACE FUNCTION update_last_modified_at()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW.last_modified_at = CURRENT_TIMESTAMP;
+    RETURN NEW;
+END;
+$$ language 'plpgsql';
+
+-- Tạo trigger cho documents
+DROP TRIGGER IF EXISTS update_documents_last_modified ON documents;
+CREATE TRIGGER update_documents_last_modified
+    BEFORE UPDATE ON documents
+    FOR EACH ROW
+    EXECUTE FUNCTION update_last_modified_at();
