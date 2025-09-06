@@ -1,0 +1,87 @@
+<div class="container max-w-4xl mx-auto space-y-6 p-4">
+  <div class="space-y-2">
+    <h1 class="text-2xl font-bold">Lịch sử giao dịch</h1>
+    <p class="text-gray-500">Xem tất cả các giao dịch điểm của bạn</p>
+  </div>
+
+  <!-- Filters -->
+  <div class="flex space-x-2">
+    <app-button
+      [variant]="filter === 'all' ? 'default' : 'outline'"
+      size="sm"
+      (click)="setFilter('all')"
+    >
+      Tất cả
+    </app-button>
+    <app-button
+      [variant]="filter === 'earn' ? 'default' : 'outline'"
+      size="sm"
+      (click)="setFilter('earn')"
+    >
+      Tích điểm
+    </app-button>
+    <app-button
+      [variant]="filter === 'spend' ? 'default' : 'outline'"
+      size="sm"
+      (click)="setFilter('spend')"
+    >
+      Tiêu điểm
+    </app-button>
+    <app-button
+      [variant]="filter === 'transfer' ? 'default' : 'outline'"
+      size="sm"
+      (click)="setFilter('transfer')"
+    >
+      Chuyển điểm
+    </app-button>
+  </div>
+
+  <!-- Transactions List -->
+  <div class="space-y-4">
+    <div *ngFor="let transaction of filteredTransactions" class="bg-white rounded-lg border border-gray-200 p-4">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center space-x-3">
+          <!-- Icon -->
+          <div class="flex-shrink-0">
+            <svg class="h-8 w-8 {{ transaction.color }}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <circle *ngIf="transaction.icon === 'circle'" cx="12" cy="12" r="10" stroke-width="2"/>
+              <path *ngIf="transaction.icon === 'plus-circle'" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              <path *ngIf="transaction.icon === 'minus-circle'" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              <path *ngIf="transaction.icon === 'arrow-right-circle'" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
+            </svg>
+          </div>
+
+          <!-- Transaction Details -->
+          <div>
+            <h3 class="text-sm font-medium text-gray-900">{{ transaction.description }}</h3>
+            <p class="text-sm text-gray-500">{{ transaction.formattedDate }}</p>
+          </div>
+        </div>
+
+        <!-- Amount and Status -->
+        <div class="text-right">
+          <p class="text-lg font-semibold {{ transaction.color }}">
+            {{ transaction.formattedAmount }}
+          </p>
+          <app-badge [variant]="transaction.status === 'success' ? 'success' : 'destructive'">
+            {{ transaction.status === 'success' ? 'Thành công' : 'Thất bại' }}
+          </app-badge>
+        </div>
+      </div>
+    </div>
+
+    <!-- Empty State -->
+    <div *ngIf="filteredTransactions.length === 0 && !isLoading" class="text-center py-12">
+      <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+      </svg>
+      <h3 class="mt-2 text-sm font-medium text-gray-900">Không có giao dịch</h3>
+      <p class="mt-1 text-sm text-gray-500">Bạn chưa có giao dịch nào trong khoảng thời gian này.</p>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="flex justify-center py-8">
+    <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+  </div>
+</div>

@@ -1,0 +1,28 @@
+server:
+  port: 8080
+
+spring:
+  data:
+    mongodb:
+      host: mongodb
+      port: 27017
+      database: loyalty
+      authentication-database: admin
+
+blockchain:
+  service:
+    url: http://backend-go:8081
+
+jwt:
+  secret: c9c1b2f3e4a5d6b7c8a9e0f1d2c3b4a5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1
+  expiration: 86400000 # 24 hours
+
+rsa:
+  private-key: classpath:keys/private.key
+  public-key: classpath:keys/public.key
+
+logging:
+  level:
+    org.springframework.web: INFO
+    com.loyalty: DEBUG
+    org.mongodb: INFO

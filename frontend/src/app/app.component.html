@@ -1,0 +1,5 @@
+<div class="min-h-screen bg-gray-50">
+  <app-navbar *ngIf="authService.isAuthenticated"></app-navbar>
+  <router-outlet></router-outlet>
+  <app-chatbot-llm [isBubbleMode]="true" *ngIf="authService.isAuthenticated"></app-chatbot-llm>
+</div>

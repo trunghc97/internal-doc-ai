@@ -1,0 +1,8 @@
+/* Register component styles */
+.max-w-mobile {
+  max-width: 28rem;
+}
+
+.min-h-screen {
+  min-height: 100vh;
+}

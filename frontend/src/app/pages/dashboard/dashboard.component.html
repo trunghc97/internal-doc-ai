@@ -1,0 +1,108 @@
+<div class="container max-w-mobile space-y-6 p-4">
+  <div class="space-y-2">
+    <h1 class="text-2xl font-bold">Xin chào!</h1>
+    <p class="text-gray-500">
+      Chào mừng bạn đến với chương trình Loyalty Points
+    </p>
+  </div>
+
+  <!-- Points Card -->
+  <app-points-card
+    [points]="points$ | async"
+    (onEarn)="onEarn()"
+    (onTransfer)="onTransfer()"
+  ></app-points-card>
+
+  <!-- Stats Cards -->
+  <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+    <app-card>
+      <app-card-header className="flex flex-row items-center space-x-4 pb-2">
+        <div class="flex h-12 w-12 items-center justify-center rounded-lg bg-blue-100">
+          <svg class="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+          </svg>
+        </div>
+        <div>
+          <app-card-title className="text-base font-semibold">Quà tặng</app-card-title>
+          <p class="text-sm text-gray-500">Đổi điểm lấy quà</p>
+        </div>
+      </app-card-header>
+      <app-card-content>
+        <div class="text-2xl font-bold text-blue-600">5</div>
+        <p class="text-sm text-gray-500">Quà tặng khả dụng</p>
+      </app-card-content>
+    </app-card>
+
+    <app-card>
+      <app-card-header className="flex flex-row items-center space-x-4 pb-2">
+        <div class="flex h-12 w-12 items-center justify-center rounded-lg bg-blue-100">
+          <svg class="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v8a2 2 0 002 2h14a2 2 0 002-2V7a2 2 0 00-2-2h-3"/>
+          </svg>
+        </div>
+        <div>
+          <app-card-title className="text-base font-semibold">Voucher</app-card-title>
+          <p class="text-sm text-gray-500">Ưu đãi của bạn</p>
+        </div>
+      </app-card-header>
+      <app-card-content>
+        <div class="text-2xl font-bold text-blue-600">3</div>
+        <p class="text-sm text-gray-500">Voucher chưa sử dụng</p>
+      </app-card-content>
+    </app-card>
+  </div>
+
+  <!-- Voucher Grid -->
+  <div class="space-y-4">
+    <h2 class="text-lg font-semibold">Voucher nổi bật</h2>
+    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+      <app-card *ngFor="let voucher of vouchers" class="cursor-pointer" (click)="onRedeem(voucher.id)">
+        <app-card-header>
+          <app-card-title>{{ voucher.title }}</app-card-title>
+          <app-card-description>{{ voucher.description }}</app-card-description>
+        </app-card-header>
+        <app-card-content>
+          <div class="flex items-center justify-between">
+            <span class="text-sm text-gray-500">{{ voucher.points }} điểm</span>
+            <span class="text-sm text-gray-500">{{ voucher.expiryDate }}</span>
+          </div>
+        </app-card-content>
+      </app-card>
+    </div>
+  </div>
+
+  <!-- Recent Transactions -->
+  <div class="space-y-4">
+    <div class="flex items-center justify-between">
+      <h2 class="text-lg font-semibold">Giao dịch gần đây</h2>
+      <a routerLink="/transactions" class="text-blue-600 hover:text-blue-500 text-sm font-medium">
+        Xem tất cả →
+      </a>
+    </div>
+    <div class="space-y-2">
+      <div *ngFor="let transaction of transactions$ | async" class="flex items-center justify-between p-3 border rounded-lg">
+        <div>
+          <p class="font-medium">{{ transaction.description }}</p>
+          <p class="text-sm text-gray-500">{{ transaction.timestamp | date:'short' }}</p>
+        </div>
+        <div class="text-right">
+          <p class="font-semibold" [ngClass]="{
+            'text-green-600': transaction.type === 'EARN',
+            'text-red-600': transaction.type === 'REDEEM',
+            'text-blue-600': transaction.type === 'TRANSFER'
+          }">
+            {{ transaction.type === 'EARN' ? '+' : transaction.type === 'REDEEM' ? '-' : '' }}{{ transaction.amount }}
+          </p>
+          <app-badge [variant]="transaction.status === 'success' ? 'success' : 'destructive'">
+            {{ transaction.status }}
+          </app-badge>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="isLoading$ | async" class="flex justify-center py-8">
+    <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+  </div>
+</div>
