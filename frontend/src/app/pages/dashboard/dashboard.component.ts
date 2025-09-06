@@ -1,7 +1,8 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { FileSizePipe } from '../../shared/pipes/file-size.pipe';
+import { ApiService, DocumentMetadata } from '../../services/api.service';
 import {
   ButtonComponent,
   CardComponent,
@@ -17,7 +18,9 @@ import {
   FormLabelComponent,
   FormDescriptionComponent,
   FormMessageComponent,
-  UploadDialogComponent
+  UploadDialogComponent,
+  DocumentDetailDialogComponent,
+  DocumentPreviewDialogComponent
 } from '../../components/molecules';
 
 interface Document {
@@ -33,7 +36,7 @@ interface Document {
   sensitivityScore?: number;
   findings?: Array<{
     type: string;
-    description: string;
+  description: string;
     page: number;
     paragraph: number;
   }>;
@@ -60,10 +63,12 @@ interface Document {
     FormDescriptionComponent,
     FormMessageComponent,
     FileSizePipe,
-    UploadDialogComponent
+    UploadDialogComponent,
+    DocumentDetailDialogComponent,
+    DocumentPreviewDialogComponent
   ]
 })
-export class DashboardComponent {
+export class DashboardComponent implements OnInit {
   // Danh sách văn bản
   documents: Document[] = [
     {
@@ -125,6 +130,7 @@ export class DashboardComponent {
   ];
 
   selectedDocument: Document | null = null;
+  previewDocuments: Document | null = null;
   showUploadDialog = false;
   
   // Filter state
@@ -133,30 +139,113 @@ export class DashboardComponent {
   timeFilter: string = '';
   filteredDocuments: Document[] = [];
 
-  constructor() {
+  constructor(private apiService: ApiService) {
     this.filterDocuments();
   }
 
-  handleUpload(event: {files: File[], metadata: any}) {
-    for (const file of event.files) {
-      const newDoc: Document = {
-        id: Math.random().toString(36).substr(2, 9),
-        name: file.name,
-        size: file.size,
-        uploadTime: new Date(),
-        status: 'analyzing',
-        type: event.metadata.type,
-        securityLevel: event.metadata.securityLevel,
-        department: event.metadata.department,
-        notes: event.metadata.notes
-      };
-      
-      this.documents.unshift(newDoc);
-      this.analyzeDocument(newDoc, file);
-    }
+  ngOnInit() {
+    this.loadDocuments();
+  }
 
+  loadDocuments() {
+    this.apiService.getDocuments().subscribe({
+      next: (documents) => {
+        this.documents = documents;
+        this.filterDocuments();
+      },
+      error: (error) => {
+        console.error('Error loading documents:', error);
+        // Fallback to mock data if API fails
+        this.filterDocuments();
+      }
+    });
+  }
+
+  handleUpload(event: {files: File[], metadata: DocumentMetadata}) {
+    for (const file of event.files) {
+      this.uploadSingleFile(file, event.metadata);
+    }
     this.showUploadDialog = false;
+  }
+
+  private uploadSingleFile(file: File, metadata: DocumentMetadata) {
+    // Tạo document tạm thời để hiển thị trong UI
+    const tempDoc: Document = {
+      id: 'temp-' + Math.random().toString(36).substr(2, 9),
+      name: file.name,
+      size: file.size,
+      uploadTime: new Date(),
+      status: 'analyzing',
+      type: metadata.type,
+      securityLevel: metadata.securityLevel,
+      department: metadata.department,
+      notes: metadata.notes
+    };
+
+    // Thêm vào danh sách để hiển thị ngay
+    this.documents.unshift(tempDoc);
     this.filterDocuments();
+
+    // Gọi API upload
+    this.apiService.uploadDocument(file, metadata).subscribe({
+      next: (response) => {
+        // Cập nhật document với thông tin từ server
+        const index = this.documents.findIndex(doc => doc.id === tempDoc.id);
+        if (index !== -1) {
+          this.documents[index] = {
+            ...response,
+            uploadTime: new Date(response.uploadTime)
+          };
+          this.filterDocuments();
+          
+          // Bắt đầu polling để kiểm tra kết quả phân tích
+          this.pollAnalysisResult(response.id);
+        }
+      },
+      error: (error) => {
+        console.error('Upload failed:', error);
+        // Cập nhật trạng thái lỗi
+        const index = this.documents.findIndex(doc => doc.id === tempDoc.id);
+        if (index !== -1) {
+          this.documents[index].status = 'error';
+          this.filterDocuments();
+        }
+      }
+    });
+  }
+
+  private pollAnalysisResult(documentId: string) {
+    const pollInterval = setInterval(() => {
+      this.apiService.getDocumentAnalysis(documentId).subscribe({
+        next: (analysis) => {
+          const index = this.documents.findIndex(doc => doc.id === documentId);
+          if (index !== -1) {
+            this.documents[index].status = 'completed';
+            this.documents[index].sensitivityScore = analysis.sensitivityScore;
+            this.documents[index].findings = analysis.findings;
+            this.filterDocuments();
+            clearInterval(pollInterval);
+          }
+        },
+        error: (error) => {
+          // Nếu phân tích chưa xong, tiếp tục polling
+          if (error.status !== 404) {
+            console.error('Error getting analysis:', error);
+            clearInterval(pollInterval);
+            const index = this.documents.findIndex(doc => doc.id === documentId);
+            if (index !== -1) {
+              this.documents[index].status = 'error';
+              this.filterDocuments();
+            }
+          }
+        }
+      });
+    }, 3000); // Poll mỗi 3 giây
+
+    // Dừng polling sau 5 phút
+    setTimeout(() => {
+      clearInterval(pollInterval);
+    }, 300000);
   }
 
   private async analyzeDocument(doc: Document, file: File) {
@@ -236,14 +325,42 @@ export class DashboardComponent {
     this.selectedDocument = doc;
   }
 
+  previewDocument(doc: Document) {
+    this.previewDocuments = doc;
+  }
+
   deleteDocument(doc: Document) {
-    const index = this.documents.findIndex(d => d.id === doc.id);
-    if (index !== -1) {
-      this.documents.splice(index, 1);
-      if (this.selectedDocument?.id === doc.id) {
-        this.selectedDocument = null;
+    if (confirm('Bạn có chắc chắn muốn xóa tài liệu này?')) {
+      // Nếu là document tạm thời, chỉ xóa khỏi UI
+      if (doc.id.startsWith('temp-')) {
+        const index = this.documents.findIndex(d => d.id === doc.id);
+        if (index !== -1) {
+          this.documents.splice(index, 1);
+          if (this.selectedDocument?.id === doc.id) {
+            this.selectedDocument = null;
+          }
+          this.filterDocuments();
+        }
+        return;
       }
-      this.filterDocuments();
+
+      // Gọi API xóa
+      this.apiService.deleteDocument(doc.id).subscribe({
+        next: () => {
+          const index = this.documents.findIndex(d => d.id === doc.id);
+          if (index !== -1) {
+            this.documents.splice(index, 1);
+            if (this.selectedDocument?.id === doc.id) {
+              this.selectedDocument = null;
+            }
+            this.filterDocuments();
+          }
+        },
+        error: (error) => {
+          console.error('Error deleting document:', error);
+          alert('Có lỗi xảy ra khi xóa tài liệu. Vui lòng thử lại.');
+        }
+      });
     }
   }
 
