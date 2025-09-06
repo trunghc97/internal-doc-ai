@@ -55,6 +55,43 @@ export interface DocumentAnalysisResult {
   }>;
 }
 
+export interface ShareRequest {
+  documentId: string;
+  userIds: string[];
+  permissions: 'view' | 'edit';
+  message?: string;
+}
+
+export interface ShareResponse {
+  success: boolean;
+  message: string;
+  sharedWith: Array<{
+    userId: string;
+    userName: string;
+    email: string;
+  }>;
+}
+
+export interface User {
+  id: string;
+  name: string;
+  email: string;
+  department: string;
+  role: string;
+  avatar?: string;
+}
+
+export interface PaginatedResponse<T> {
+  content: T[];
+  totalElements: number;
+  totalPages: number;
+  size: number;
+  number: number;
+  first: boolean;
+  last: boolean;
+  numberOfElements: number;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -198,8 +235,8 @@ export class ApiService {
       .pipe(catchError(this.handleError.bind(this)));
   }
 
-  getDocuments(): Observable<any[]> {
-    return this.http.get<any[]>(`${this.baseUrl}/documents`)
+  getDocuments(page: number = 0, size: number = 20): Observable<PaginatedResponse<any> | any[]> {
+    return this.http.get<PaginatedResponse<any> | any[]>(`${this.baseUrl}/documents/with-permission?page=${page}&size=${size}`)
       .pipe(catchError(this.handleError.bind(this)));
   }
 
@@ -220,6 +257,78 @@ export class ApiService {
 
   downloadDocument(id: string): Observable<Blob> {
     return this.http.get(`${this.baseUrl}/documents/${id}/download`, { responseType: 'blob' })
+      .pipe(catchError(this.handleError.bind(this)));
+  }
+
+  // Share Document APIs
+  shareDocument(shareRequest: ShareRequest): Observable<ShareResponse> {
+    return this.http.post<ShareResponse>(`${this.baseUrl}/documents/share`, shareRequest)
+      .pipe(catchError(this.handleError.bind(this)));
+  }
+
+  getUsers(): Observable<User[]> {
+    return this.http.get<User[]>(`${this.baseUrl}/users`)
+      .pipe(catchError(this.handleError.bind(this)));
+  }
+
+  searchUsers(query: string): Observable<User[]> {
+    return this.http.get<User[]>(`${this.baseUrl}/users/search?q=${encodeURIComponent(query)}`)
+      .pipe(catchError(this.handleError.bind(this)));
+  }
+
+  getSharedDocuments(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.baseUrl}/documents/shared`)
+      .pipe(catchError(this.handleError.bind(this)));
+  }
+
+  getDocumentShares(documentId: string): Observable<any[]> {
+    return this.http.get<any[]>(`${this.baseUrl}/documents/${documentId}/shares`)
+      .pipe(catchError(this.handleError.bind(this)));
+  }
+
+  revokeDocumentShare(documentId: string, userId: string): Observable<any> {
+    return this.http.delete(`${this.baseUrl}/documents/${documentId}/shares/${userId}`)
+      .pipe(catchError(this.handleError.bind(this)));
+  }
+
+  // User Management APIs
+  createUser(userData: any): Observable<any> {
+    return this.http.post(`${this.baseUrl}/users`, userData)
+      .pipe(catchError(this.handleError.bind(this)));
+  }
+
+  updateUser(userId: string, userData: any): Observable<any> {
+    return this.http.put(`${this.baseUrl}/users/${userId}`, userData)
+      .pipe(catchError(this.handleError.bind(this)));
+  }
+
+  deleteUser(userId: string): Observable<any> {
+    return this.http.delete(`${this.baseUrl}/users/${userId}`)
+      .pipe(catchError(this.handleError.bind(this)));
+  }
+
+  toggleUserStatus(userId: string, status: 'active' | 'inactive'): Observable<any> {
+    return this.http.patch(`${this.baseUrl}/users/${userId}/status`, { status })
+      .pipe(catchError(this.handleError.bind(this)));
+  }
+
+  resetUserPassword(userId: string): Observable<any> {
+    return this.http.post(`${this.baseUrl}/users/${userId}/reset-password`, {})
+      .pipe(catchError(this.handleError.bind(this)));
+  }
+
+  getUserById(userId: string): Observable<any> {
+    return this.http.get(`${this.baseUrl}/users/${userId}`)
+      .pipe(catchError(this.handleError.bind(this)));
+  }
+
+  getUsersByDepartment(department: string): Observable<User[]> {
+    return this.http.get<User[]>(`${this.baseUrl}/users?department=${encodeURIComponent(department)}`)
+      .pipe(catchError(this.handleError.bind(this)));
+  }
+
+  getUsersByRole(role: string): Observable<User[]> {
+    return this.http.get<User[]>(`${this.baseUrl}/users?role=${encodeURIComponent(role)}`)
       .pipe(catchError(this.handleError.bind(this)));
   }
 }
