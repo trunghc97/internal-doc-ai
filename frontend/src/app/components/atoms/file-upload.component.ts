@@ -5,7 +5,7 @@ import { Component, EventEmitter, HostListener, Input, Output } from '@angular/c
   selector: 'app-file-upload',
   template: `
     <div
-      class="flex flex-col items-center justify-center w-full h-64 border-2 border-dashed rounded-lg cursor-pointer transition-colors duration-300 ease-in-out"
+      class="flex flex-col items-center justify-center w-full h-64 border-2 border-dashed rounded-lg cursor-pointer transition-colors duration-300 ease-in-out relative"
       [class.border-blue-500]="isDragging"
       [class.bg-blue-50]="isDragging"
       [class.border-gray-300]="!isDragging"
@@ -23,7 +23,9 @@ import { Component, EventEmitter, HostListener, Input, Output } from '@angular/c
         [multiple]="multiple"
         [accept]="accept"
       />
-      <div class="flex flex-col items-center justify-center pt-5 pb-6">
+
+      <!-- Hiển thị khi chưa có file -->
+      <div *ngIf="!selectedFiles.length" class="flex flex-col items-center justify-center pt-5 pb-6">
         <svg
           class="w-10 h-10 mb-3"
           [class.text-blue-500]="isDragging"
@@ -45,6 +47,54 @@ import { Component, EventEmitter, HostListener, Input, Output } from '@angular/c
         <p class="text-xs text-gray-500" *ngIf="accept">
           {{ acceptMessage }}
         </p>
+      </div>
+
+      <!-- Hiển thị khi đã chọn file -->
+      <div *ngIf="selectedFiles.length" class="w-full h-full p-4">
+        <div class="flex items-start space-x-4 bg-white rounded-lg p-4 shadow-sm">
+          <!-- Icon theo loại file -->
+          <div class="flex-shrink-0">
+            <div [ngSwitch]="getFileType(selectedFiles[0].name)" class="w-12 h-12 flex items-center justify-center rounded-lg">
+              <!-- PDF Icon -->
+              <svg *ngSwitchCase="'pdf'" class="w-12 h-12 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                  d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                <text x="8" y="16" class="text-xs font-bold" fill="currentColor">PDF</text>
+              </svg>
+              <!-- DOCX Icon -->
+              <svg *ngSwitchCase="'docx'" class="w-12 h-12 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                  d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                <text x="6" y="16" class="text-xs font-bold" fill="currentColor">DOC</text>
+              </svg>
+            </div>
+          </div>
+
+          <!-- Thông tin file -->
+          <div class="flex-1 min-w-0">
+            <p class="text-sm font-medium text-gray-900 truncate">
+              {{selectedFiles[0].name}}
+            </p>
+            <p class="text-sm text-gray-500">
+              {{formatFileSize(selectedFiles[0].size)}}
+            </p>
+          </div>
+
+          <!-- Nút xóa -->
+          <button
+            class="flex-shrink-0 text-gray-400 hover:text-gray-500"
+            (click)="removeFiles($event)"
+          >
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
+        <!-- Multiple files indicator -->
+        <div *ngIf="selectedFiles.length > 1" class="mt-2 text-sm text-gray-500 text-center">
+          +{{selectedFiles.length - 1}} file khác
+        </div>
       </div>
     </div>
   `,
@@ -102,6 +152,8 @@ export class FileUploadComponent {
     }
   }
 
+  selectedFiles: File[] = [];
+
   private handleFiles(files: File[]) {
     let validFiles = files;
 
@@ -146,7 +198,32 @@ export class FileUploadComponent {
     }
 
     if (validFiles.length > 0) {
+      this.selectedFiles = validFiles;
       this.filesSelected.emit(validFiles);
     }
+  }
+
+  // Lấy loại file từ tên file
+  getFileType(filename: string): string {
+    const extension = filename.split('.').pop()?.toLowerCase();
+    if (extension === 'pdf') return 'pdf';
+    if (['doc', 'docx'].includes(extension || '')) return 'docx';
+    return 'other';
+  }
+
+  // Format kích thước file
+  formatFileSize(bytes: number): string {
+    if (bytes === 0) return '0 B';
+    const k = 1024;
+    const sizes = ['B', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  }
+
+  // Xóa các file đã chọn
+  removeFiles(event: Event) {
+    event.stopPropagation();
+    this.selectedFiles = [];
+    this.filesSelected.emit([]);
   }
 }

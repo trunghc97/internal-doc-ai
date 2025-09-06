@@ -29,8 +29,8 @@ export interface TransferRequest extends PointsTransaction {
   providedIn: 'root'
 })
 export class ApiService {
-  private baseUrl = 'http://localhost:8080/api';
-  private llmBaseUrl = 'http://localhost:8080';
+  private baseUrl = 'http://192.168.100.133';
+  private llmBaseUrl = 'http://192.168.0.63';
 
   constructor(
     private http: HttpClient,
