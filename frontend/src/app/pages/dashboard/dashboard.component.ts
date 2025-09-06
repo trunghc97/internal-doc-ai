@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { FileSizePipe } from '../../shared/pipes/file-size.pipe';
 import { ApiService, DocumentMetadata, ShareRequest, PaginatedResponse } from '../../services/api.service';
+import { NotificationService } from '../../services/notification.service';
 import {
   ButtonComponent,
   CardComponent,
@@ -21,7 +22,8 @@ import {
   UploadDialogComponent,
   DocumentDetailDialogComponent,
   DocumentPreviewDialogComponent,
-  ShareDialogComponent
+  ShareDialogComponent,
+  NotificationContainerComponent
 } from '../../components/molecules';
 
 interface Document {
@@ -67,7 +69,8 @@ interface Document {
     UploadDialogComponent,
     DocumentDetailDialogComponent,
     DocumentPreviewDialogComponent,
-    ShareDialogComponent
+    ShareDialogComponent,
+    NotificationContainerComponent
   ]
 })
 export class DashboardComponent implements OnInit {
@@ -160,7 +163,10 @@ export class DashboardComponent implements OnInit {
   userTotalElements: number = 0;
   userTotalPages: number = 0;
 
-  constructor(private apiService: ApiService) {
+  constructor(
+    private apiService: ApiService,
+    private notificationService: NotificationService
+  ) {
     this.filterDocuments();
   }
 
@@ -190,6 +196,10 @@ export class DashboardComponent implements OnInit {
       },
       error: (error) => {
         console.error('Error loading documents:', error);
+        this.notificationService.error(
+          'Lỗi tải tài liệu',
+          'Không thể tải danh sách tài liệu. Đang sử dụng dữ liệu mẫu.'
+        );
         // Fallback to mock data if API fails
         this.filterDocuments();
       }
@@ -375,12 +385,18 @@ export class DashboardComponent implements OnInit {
     this.apiService.shareDocument(shareRequest).subscribe({
       next: (response) => {
         console.log('Document shared successfully:', response);
-        alert(`Tài liệu đã được chia sẻ thành công với ${response.sharedWith.length} người dùng!`);
+        this.notificationService.success(
+          'Chia sẻ thành công',
+          `Tài liệu đã được chia sẻ với ${response.sharedWith.length} người dùng!`
+        );
         this.shareDocument = null;
       },
       error: (error) => {
         console.error('Error sharing document:', error);
-        alert('Có lỗi xảy ra khi chia sẻ tài liệu. Vui lòng thử lại.');
+        this.notificationService.error(
+          'Lỗi chia sẻ tài liệu',
+          'Có lỗi xảy ra khi chia sẻ tài liệu. Vui lòng thử lại.'
+        );
       }
     });
   }
@@ -403,6 +419,10 @@ export class DashboardComponent implements OnInit {
       // Gọi API xóa
       this.apiService.deleteDocument(doc.id).subscribe({
         next: () => {
+          this.notificationService.success(
+            'Xóa thành công',
+            `Tài liệu "${doc.name}" đã được xóa.`
+          );
           const index = this.documents.findIndex(d => d.id === doc.id);
           if (index !== -1) {
             this.documents.splice(index, 1);
@@ -414,7 +434,10 @@ export class DashboardComponent implements OnInit {
         },
         error: (error) => {
           console.error('Error deleting document:', error);
-          alert('Có lỗi xảy ra khi xóa tài liệu. Vui lòng thử lại.');
+          this.notificationService.error(
+            'Lỗi xóa tài liệu',
+            'Không thể xóa tài liệu. Vui lòng thử lại.'
+          );
         }
       });
     }
@@ -682,11 +705,17 @@ export class DashboardComponent implements OnInit {
       next: (response) => {
         user.status = newStatus;
         console.log(`User ${user.name} status updated to ${newStatus}`);
-        alert(`Trạng thái người dùng "${user.name}" đã được cập nhật thành ${newStatus === 'active' ? 'hoạt động' : 'không hoạt động'}!`);
+        this.notificationService.success(
+          'Cập nhật thành công',
+          `Trạng thái người dùng "${user.name}" đã được ${newStatus === 'active' ? 'kích hoạt' : 'vô hiệu hóa'}.`
+        );
       },
       error: (error) => {
         console.error('Error updating user status:', error);
-        alert('Có lỗi xảy ra khi cập nhật trạng thái người dùng. Vui lòng thử lại.');
+        this.notificationService.error(
+          'Lỗi cập nhật trạng thái',
+          'Không thể cập nhật trạng thái người dùng. Vui lòng thử lại.'
+        );
       }
     });
   }
@@ -701,11 +730,17 @@ export class DashboardComponent implements OnInit {
             this.filterUsers();
           }
           console.log('User deleted successfully:', response);
-          alert(`Người dùng "${user.name}" đã được xóa thành công!`);
+          this.notificationService.success(
+            'Xóa thành công',
+            `Người dùng "${user.name}" đã được xóa khỏi hệ thống.`
+          );
         },
         error: (error) => {
           console.error('Error deleting user:', error);
-          alert('Có lỗi xảy ra khi xóa người dùng. Vui lòng thử lại.');
+          this.notificationService.error(
+            'Lỗi xóa người dùng',
+            'Không thể xóa người dùng. Vui lòng thử lại.'
+          );
         }
       });
     }
@@ -716,11 +751,17 @@ export class DashboardComponent implements OnInit {
       this.apiService.resetUserPassword(user.id).subscribe({
         next: (response) => {
           console.log('Password reset successfully:', response);
-          alert(`Mật khẩu mới đã được gửi qua email cho "${user.name}"!`);
+          this.notificationService.success(
+            'Reset mật khẩu thành công',
+            `Mật khẩu mới đã được gửi qua email cho "${user.name}".`
+          );
         },
         error: (error) => {
           console.error('Error resetting password:', error);
-          alert('Có lỗi xảy ra khi reset mật khẩu. Vui lòng thử lại.');
+          this.notificationService.error(
+            'Lỗi reset mật khẩu',
+            'Không thể reset mật khẩu. Vui lòng thử lại.'
+          );
         }
       });
     }
