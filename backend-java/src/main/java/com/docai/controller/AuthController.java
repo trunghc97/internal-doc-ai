@@ -1,28 +1,22 @@
-package com.loyalty.controller;
+package com.docai.controller;
 
-import com.loyalty.dto.AuthRequest;
-import com.loyalty.dto.AuthResponse;
-import com.loyalty.dto.RegisterRequest;
-import com.loyalty.security.RSAEncryptionService;
-import com.loyalty.service.UserService;
+import com.docai.dto.AuthRequest;
+import com.docai.dto.AuthResponse;
+import com.docai.dto.RegisterRequest;
+import com.docai.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.Map;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequiredArgsConstructor
 @RequestMapping("/api/auth")
+@RequiredArgsConstructor
 public class AuthController {
     private final UserService userService;
-    private final RSAEncryptionService rsaEncryptionService;
-
-    @GetMapping("/public-key")
-    public ResponseEntity<Map<String, String>> getPublicKey() {
-        return ResponseEntity.ok(Map.of("publicKey", rsaEncryptionService.getPublicKeyAsBase64()));
-    }
 
     @PostMapping("/register")
     public ResponseEntity<AuthResponse> register(@Valid @RequestBody RegisterRequest request) {

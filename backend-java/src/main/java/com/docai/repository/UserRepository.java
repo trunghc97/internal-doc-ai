@@ -1,6 +1,6 @@
-package com.loyalty.repository;
+package com.docai.repository;
 
-import com.loyalty.model.User;
+import com.docai.model.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;

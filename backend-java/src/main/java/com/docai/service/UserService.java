@@ -1,12 +1,12 @@
-package com.loyalty.service;
+package com.docai.service;
 
-import com.loyalty.dto.AuthRequest;
-import com.loyalty.dto.AuthResponse;
-import com.loyalty.dto.RegisterRequest;
-import com.loyalty.model.User;
-import com.loyalty.repository.UserRepository;
-import com.loyalty.security.JwtTokenProvider;
-import com.loyalty.security.RSAEncryptionService;
+import com.docai.dto.AuthRequest;
+import com.docai.dto.AuthResponse;
+import com.docai.dto.RegisterRequest;
+import com.docai.model.User;
+import com.docai.repository.UserRepository;
+import com.docai.security.JwtTokenProvider;
+import com.docai.security.RSAEncryptionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -40,7 +40,7 @@ public class UserService {
             .username(request.getUsername())
             .password(passwordEncoder.encode(decryptedPassword))
             .email(request.getEmail())
-            .points(0L)
+            .role(User.Role.USER)
             .enabled(true)
             .build();
 
@@ -48,9 +48,7 @@ public class UserService {
         user = userRepository.save(user);
         String token = jwtTokenProvider.generateToken(user);
         
-        // Clear sensitive data before returning
-        user.setPassword(null);
-        return new AuthResponse(token, user.getUsername(), user.getPoints());
+        return new AuthResponse(token, user.getUsername(), user.getRole().name());
     }
 
     public AuthResponse login(AuthRequest request) {
@@ -61,17 +59,9 @@ public class UserService {
             );
             User user = (User) authentication.getPrincipal();
             String token = jwtTokenProvider.generateToken(user);
-            return new AuthResponse(token, user.getUsername(), user.getPoints());
+            return new AuthResponse(token, user.getUsername(), user.getRole().name());
         } catch (Exception e) {
             throw new RuntimeException("Login failed: " + e.getMessage(), e);
         }
-    }
-
-    @Transactional
-    public void updatePoints(String userId, Long amount) {
-        User user = userRepository.findById(userId)
-            .orElseThrow(() -> new RuntimeException("User not found"));
-        user.setPoints(user.getPoints() + amount);
-        userRepository.save(user);
     }
 }

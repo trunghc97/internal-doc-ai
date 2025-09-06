@@ -1,4 +1,4 @@
-package com.loyalty.dto;
+package com.docai.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -8,5 +8,5 @@ import lombok.Data;
 public class AuthResponse {
     private String token;
     private String username;
-    private Long points;
+    private String role;
 }
