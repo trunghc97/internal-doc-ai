@@ -65,10 +65,7 @@ python:
     url: http://localhost:8081
 
 file:
-  upload:
-    # 10MB
-
-
+  upload: 10MB
 
 logging:
   level:
