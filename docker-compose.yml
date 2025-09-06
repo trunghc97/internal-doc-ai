@@ -26,7 +26,6 @@ services:
       - SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT=org.hibernate.dialect.PostgreSQLDialect
       - CORS_ALLOWED_ORIGINS=http://localhost:3000
       - JWT_SECRET=c9c1b2f3e4a5d6b7c8a9e0f1d2c3b4a5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1
-      - BLOCKCHAIN_API_URL=http://localhost:8081
     depends_on:
       - postgres
     networks:
@@ -62,33 +61,6 @@ services:
       - postgres_data:/var/lib/postgresql/data
     networks:
       - docai-network
-
-  ollama:
-    image: ollama/ollama:latest
-    volumes:
-      - ollama_data:/root/.ollama
-    networks:
-      - docai-network
-    environment:
-      - OLLAMA_MODELS=/root/.ollama/models
-      - OLLAMA_HOST=0.0.0.0
-      # Tối ưu cao cho Mac M1
-      - OLLAMA_TIMEOUT=90
-      - OLLAMA_CONTEXT_LENGTH=1024
-      - OLLAMA_NUM_THREAD=8
-      - OLLAMA_NUM_GPU=1  # Bật GPU cho M1
-      - OLLAMA_MAX_LOADED_MODELS=1
-      - OLLAMA_KEEP_ALIVE=10m
-      - OLLAMA_FLASH_ATTENTION=1
-    deploy:
-      resources:
-        limits:
-          memory: 8G
-          cpus: '4'
-        reservations:
-          memory: 4G
-          cpus: '2'
-    command: ["serve"]
 
 networks:
   docai-network:
