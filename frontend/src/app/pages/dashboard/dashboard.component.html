@@ -5,8 +5,36 @@
     <p class="mt-2 text-gray-600">Hệ thống quản lý và phân tích văn bản với AI</p>
   </div>
 
-  <!-- Bảng thống kê tài liệu -->
-  <div class="mb-8">
+  <!-- Tab Navigation -->
+  <div class="mb-6">
+    <div class="border-b border-gray-200">
+      <nav class="-mb-px flex space-x-8">
+        <button
+          (click)="switchTab('documents')"
+          [class]="'py-2 px-1 border-b-2 font-medium text-sm ' + (activeTab === 'documents' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300')"
+        >
+          <svg class="h-5 w-5 mr-2 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          </svg>
+          Quản lý tài liệu
+        </button>
+        <button
+          (click)="switchTab('users')"
+          [class]="'py-2 px-1 border-b-2 font-medium text-sm ' + (activeTab === 'users' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300')"
+        >
+          <svg class="h-5 w-5 mr-2 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
+          </svg>
+          Quản lý người dùng
+        </button>
+      </nav>
+        </div>
+        </div>
+
+  <!-- Documents Tab Content -->
+  <div *ngIf="activeTab === 'documents'">
+    <!-- Bảng thống kê tài liệu -->
+    <div class="mb-8">
     <app-card>
       <app-card-header>
         <app-card-title>Thống kê tài liệu</app-card-title>
@@ -166,7 +194,7 @@
         </app-button>
       </div>
     </div>
-  </div>
+        </div>
 
   <!-- Upload Dialog -->
   <app-upload-dialog
@@ -182,14 +210,334 @@
     (close)="selectedDocument = null"
   ></app-document-detail-dialog>
 
-  <!-- Document Preview Dialog -->
-  <app-document-preview-dialog
-    *ngIf="previewDocuments"
-    [document]="previewDocuments"
-    (close)="previewDocuments = null"
-  ></app-document-preview-dialog>
+    <!-- Document Preview Dialog -->
+    <app-document-preview-dialog
+      *ngIf="previewDocuments"
+      [document]="previewDocuments"
+      (close)="previewDocuments = null"
+    ></app-document-preview-dialog>
 
-  <div class="">
+    <!-- Share Document Dialog -->
+    <app-share-dialog
+      *ngIf="shareDocument"
+      [document]="shareDocument"
+      (close)="shareDocument = null"
+      (share)="onShareDocument($event)"
+    ></app-share-dialog>
+        </div>
+
+  <!-- Users Tab Content -->
+  <div *ngIf="activeTab === 'users'">
+    <!-- User Statistics -->
+    <div class="mb-8">
+      <app-card>
+        <app-card-header>
+          <app-card-title>Thống kê người dùng</app-card-title>
+      </app-card-header>
+      <app-card-content>
+          <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <!-- Total Users -->
+            <div class="bg-white p-6 rounded-lg border border-gray-200">
+              <div class="flex items-center">
+                <div class="p-3 rounded-full bg-blue-100">
+                  <svg class="h-8 w-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
+                  </svg>
+                </div>
+                <div class="ml-4">
+                  <p class="text-sm font-medium text-gray-600">Tổng số người dùng</p>
+                  <p class="text-2xl font-bold text-gray-900">{{getTotalUsersCount()}}</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Active Users -->
+            <div class="bg-white p-6 rounded-lg border border-gray-200">
+              <div class="flex items-center">
+                <div class="p-3 rounded-full bg-green-100">
+                  <svg class="h-8 w-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </div>
+                <div class="ml-4">
+                  <p class="text-sm font-medium text-gray-600">Người dùng hoạt động</p>
+                  <p class="text-2xl font-bold text-gray-900">{{getUserCountByStatus('active')}}</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Inactive Users -->
+            <div class="bg-white p-6 rounded-lg border border-gray-200">
+              <div class="flex items-center">
+                <div class="p-3 rounded-full bg-red-100">
+                  <svg class="h-8 w-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </div>
+                <div class="ml-4">
+                  <p class="text-sm font-medium text-gray-600">Người dùng không hoạt động</p>
+                  <p class="text-2xl font-bold text-gray-900">{{getUserCountByStatus('inactive')}}</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Departments -->
+            <div class="bg-white p-6 rounded-lg border border-gray-200">
+              <div class="flex items-center">
+                <div class="p-3 rounded-full bg-purple-100">
+                  <svg class="h-8 w-8 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                  </svg>
+                </div>
+                <div class="ml-4">
+                  <p class="text-sm font-medium text-gray-600">Số phòng ban</p>
+                  <p class="text-2xl font-bold text-gray-900">{{getDepartmentCount()}}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </app-card-content>
+      </app-card>
+    </div>
+
+    <!-- User Search and Actions -->
+    <div class="mb-6">
+      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-4 sm:space-y-4">
+        <!-- Search -->
+        <div class="flex-1 max-w-md">
+          <div class="relative">
+            <input
+              type="text"
+              [(ngModel)]="userSearchTerm"
+              (input)="filterUsers()"
+              placeholder="Tìm kiếm người dùng..."
+              class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            >
+            <svg class="absolute left-3 top-2.5 h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+          </div>
+        </div>
+      </div>
+  </div>
+
+    <!-- Users Table -->
+    <div class="mb-8">
+      <app-card>
+        <app-card-header>
+          <app-card-title>Danh sách người dùng</app-card-title>
+        </app-card-header>
+        <app-card-content>
+          <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+              <thead class="bg-gray-50">
+                <tr>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Người dùng
+                  </th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Phòng ban
+                  </th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Vai trò
+                  </th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Trạng thái
+                  </th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Đăng nhập cuối
+                  </th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Thao tác
+                  </th>
+                </tr>
+              </thead>
+              <tbody class="bg-white divide-y divide-gray-200">
+                <tr *ngFor="let user of filteredUsers" class="hover:bg-gray-50">
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <div class="flex items-center">
+                      <div class="flex-shrink-0 h-10 w-10">
+                        <div class="h-10 w-10 rounded-full bg-gray-300 flex items-center justify-center">
+                          <span class="text-sm font-medium text-gray-700">{{user.name.charAt(0).toUpperCase()}}</span>
+                        </div>
+                      </div>
+                      <div class="ml-4">
+                        <div class="text-sm font-medium text-gray-900">{{user.name}}</div>
+                        <div class="text-sm text-gray-500">{{user.email}}</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <app-badge
+                      [variant]="'info'"
+                      [type]="'soft'"
+                      [size]="'sm'"
+                    >
+                      {{user.department}}
+                    </app-badge>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <app-badge
+                      [variant]="'secondary'"
+                      [type]="'soft'"
+                      [size]="'sm'"
+                    >
+                      {{user.role}}
+                    </app-badge>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <app-badge
+                      [variant]="user.status === 'active' ? 'success' : 'danger'"
+                      [type]="'soft'"
+                      [size]="'sm'"
+                    >
+                      {{user.status === 'active' ? 'Hoạt động' : 'Không hoạt động'}}
+                    </app-badge>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {{user.lastLogin | date:'short'}}
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                    <div class="flex justify-end space-x-2">
+                      <app-button
+                        [variant]="'ghost'"
+                        [size]="'sm'"
+                        (click)="editUser(user)"
+                      >
+                        <svg class="h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                        </svg>
+                        Sửa
+                      </app-button>
+                      <app-button
+                        [variant]="user.status === 'active' ? 'warning' : 'success'"
+                        [size]="'sm'"
+                        (click)="toggleUserStatus(user)"
+                      >
+                        <svg class="h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l4-4 4 4m0 6l-4 4-4-4" />
+                        </svg>
+                        {{user.status === 'active' ? 'Vô hiệu' : 'Kích hoạt'}}
+                      </app-button>
+                      <app-button
+                        [variant]="'info'"
+                        [size]="'sm'"
+                        (click)="resetUserPassword(user)"
+                      >
+                        <svg class="h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v-2L3.257 9.257a6 6 0 018.486-8.486L18 7z" />
+                        </svg>
+                        Reset MK
+                      </app-button>
+                      <app-button
+                        [variant]="'destructive'"
+                        [size]="'sm'"
+                        (click)="deleteUser(user)"
+                      >
+                        <svg class="h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                        Xóa
+                      </app-button>
+                    </div>
+                  </td>
+                </tr>
+                <tr *ngIf="filteredUsers.length === 0">
+                  <td colspan="6" class="px-6 py-10 text-center text-gray-500">
+                    Không có người dùng nào
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- User Pagination -->
+          <div *ngIf="userTotalElements > 0" class="px-6 py-4 border-t border-gray-200">
+          <div class="flex items-center justify-between">
+              <!-- Page info -->
+              <div class="flex items-center text-sm text-gray-700">
+                <span>Hiển thị {{userStartIndex}} - {{userEndIndex}} trong tổng số {{userTotalElements}} người dùng</span>
+                <select 
+                  [(ngModel)]="userPageSize" 
+                  (change)="changeUserPageSize(userPageSize)"
+                  class="ml-4 px-2 py-1 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                >
+                  <option value="10">10/trang</option>
+                  <option value="20">20/trang</option>
+                  <option value="50">50/trang</option>
+                  <option value="100">100/trang</option>
+                </select>
+              </div>
+
+              <!-- Pagination controls -->
+              <div class="flex items-center space-x-2">
+                <!-- First page -->
+                <button
+                  (click)="goToFirstUserPage()"
+                  [disabled]="userCurrentPage === 0"
+                  class="px-2 py-1 text-sm border border-gray-300 rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  title="Trang đầu"
+                >
+                  <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
+                  </svg>
+                </button>
+
+                <!-- Previous page -->
+                <button
+                  (click)="goToPreviousUserPage()"
+                  [disabled]="userCurrentPage === 0"
+                  class="px-2 py-1 text-sm border border-gray-300 rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  title="Trang trước"
+                >
+                  <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                  </svg>
+                </button>
+
+                <!-- Page numbers -->
+                <div class="flex items-center space-x-1">
+                  <button
+                    *ngFor="let page of userPageNumbers"
+                    (click)="goToUserPage(page)"
+                    [class]="'px-3 py-1 text-sm border rounded ' + (userCurrentPage === page ? 'bg-blue-500 text-white border-blue-500' : 'border-gray-300 hover:bg-gray-50')"
+                  >
+                    {{page + 1}}
+                  </button>
+                </div>
+
+                <!-- Next page -->
+                <button
+                  (click)="goToNextUserPage()"
+                  [disabled]="userCurrentPage >= userTotalPages - 1"
+                  class="px-2 py-1 text-sm border border-gray-300 rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  title="Trang sau"
+                >
+                  <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                  </svg>
+                </button>
+
+                <!-- Last page -->
+                <button
+                  (click)="goToLastUserPage()"
+                  [disabled]="userCurrentPage >= userTotalPages - 1"
+                  class="px-2 py-1 text-sm border border-gray-300 rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  title="Trang cuối"
+                >
+                  <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </div>
+        </app-card-content>
+      </app-card>
+    </div>
+  </div>
+
+  <div class="" *ngIf="activeTab !== 'users'">
     <!-- Khu vực danh sách văn bản -->
 
       <!-- Danh sách văn bản đã upload -->
@@ -332,6 +680,17 @@
                           Chi tiết
                         </app-button>
                         <app-button
+                          [variant]="'ghost'"
+                          [size]="'sm'"
+                          (click)="openShareDialog(doc)"
+                          [disabled]="doc.status !== 'completed'"
+                        >
+                          <svg class="h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z" />
+                          </svg>
+                          Chia sẻ
+                        </app-button>
+                        <app-button
                           [variant]="'destructive'"
                           [size]="'sm'"
                           (click)="deleteDocument(doc)"
@@ -352,6 +711,88 @@
                 </tbody>
               </table>
             </div>
+            
+            <!-- Pagination -->
+            <div *ngIf="totalElements > 0" class="px-6 py-4 border-t border-gray-200">
+    <div class="flex items-center justify-between">
+                <!-- Page info -->
+                <div class="flex items-center text-sm text-gray-700">
+                  <span>Hiển thị {{startIndex}} - {{endIndex}} trong tổng số {{totalElements}} tài liệu</span>
+                  <select 
+                    [(ngModel)]="pageSize" 
+                    (change)="changePageSize(pageSize)"
+                    class="ml-4 px-2 py-1 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  >
+                    <option value="10">10/trang</option>
+                    <option value="20">20/trang</option>
+                    <option value="50">50/trang</option>
+                    <option value="100">100/trang</option>
+                  </select>
+                </div>
+
+                <!-- Pagination controls -->
+                <div class="flex items-center space-x-2">
+                  <!-- First page -->
+                  <button
+                    (click)="goToFirstPage()"
+                    [disabled]="currentPage === 0"
+                    class="px-2 py-1 text-sm border border-gray-300 rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                    title="Trang đầu"
+                  >
+                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
+                    </svg>
+                  </button>
+
+                  <!-- Previous page -->
+                  <button
+                    (click)="goToPreviousPage()"
+                    [disabled]="currentPage === 0"
+                    class="px-2 py-1 text-sm border border-gray-300 rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                    title="Trang trước"
+                  >
+                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                    </svg>
+                  </button>
+
+                  <!-- Page numbers -->
+                  <div class="flex items-center space-x-1">
+                    <button
+                      *ngFor="let page of pageNumbers"
+                      (click)="goToPage(page)"
+                      [class]="'px-3 py-1 text-sm border rounded ' + (currentPage === page ? 'bg-blue-500 text-white border-blue-500' : 'border-gray-300 hover:bg-gray-50')"
+                    >
+                      {{page + 1}}
+                    </button>
+                  </div>
+
+                  <!-- Next page -->
+                  <button
+                    (click)="goToNextPage()"
+                    [disabled]="currentPage >= totalPages - 1"
+                    class="px-2 py-1 text-sm border border-gray-300 rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                    title="Trang sau"
+                  >
+                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                    </svg>
+                  </button>
+
+                  <!-- Last page -->
+                  <button
+                    (click)="goToLastPage()"
+                    [disabled]="currentPage >= totalPages - 1"
+                    class="px-2 py-1 text-sm border border-gray-300 rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                    title="Trang cuối"
+                  >
+                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7" />
+                    </svg>
+                  </button>
+    </div>
+        </div>
+        </div>
           </app-card-content>
         </app-card>
       </div>
@@ -388,13 +829,13 @@
               <div class="mt-1 text-sm text-red-600">{{finding.description}}</div>
               <div class="mt-2 text-sm text-gray-500">
                 <span class="font-medium">Vị trí:</span> Trang {{finding.page}}, đoạn {{finding.paragraph}}
-              </div>
-            </div>
+    </div>
+  </div>
 
             <div *ngIf="!selectedDocument?.findings?.length" class="text-center text-gray-500 py-4">
               Chưa phát hiện thông tin nhạy cảm
-            </div>
-          </div>
+  </div>
+</div>
 
           <div *ngIf="!selectedDocument" class="text-center text-gray-500 py-4">
             Chọn một văn bản để xem kết quả phân tích
