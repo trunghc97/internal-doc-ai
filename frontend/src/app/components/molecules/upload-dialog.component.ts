@@ -14,6 +14,7 @@ import {
   FormFieldComponent,
   FormLabelComponent
 } from '../molecules';
+import { HtmlValidator } from '../../shared/validators';
 
 interface DocumentMetadata {
   type: string;
@@ -154,11 +155,31 @@ export class UploadDialogComponent {
     securityLevel: '',
     department: ''
   };
+  
+  validationErrors: { [key: string]: string } = {};
 
   get isValid(): boolean {
     return (
-      this.selectedFiles.length > 0 
+      this.selectedFiles.length > 0 && 
+      this.validateMetadata()
     );
+  }
+  
+  validateMetadata(): boolean {
+    this.validationErrors = {};
+    let isValid = true;
+
+    // Validate notes field for HTML
+    if (this.metadata.notes && HtmlValidator.containsHtml(this.metadata.notes)) {
+      this.validationErrors['notes'] = 'Ghi chú không được chứa thẻ HTML';
+      isValid = false;
+    }
+
+    return isValid;
+  }
+  
+  getFieldError(fieldName: string): string {
+    return this.validationErrors[fieldName] || '';
   }
 
   onFilesSelected(files: File[]) {

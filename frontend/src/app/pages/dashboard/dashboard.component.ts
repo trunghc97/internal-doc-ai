@@ -5,6 +5,7 @@ import { FileSizePipe } from '../../shared/pipes/file-size.pipe';
 import { ApiService, DocumentMetadata, ShareRequest, PaginatedResponse } from '../../services/api.service';
 import { NotificationService } from '../../services/notification.service';
 import { AuthService } from '../../services/auth.service';
+import { HtmlValidator } from '../../shared/validators';
 import {
   ButtonComponent,
   CardComponent,
@@ -633,7 +634,16 @@ export class DashboardComponent implements OnInit {
   filterUsers() {
     let filtered = [...this.users];
     
+    // Validate and sanitize user search term
     if (this.userSearchTerm.trim()) {
+      if (HtmlValidator.containsHtml(this.userSearchTerm)) {
+        this.notificationService.warning(
+          'Tìm kiếm không hợp lệ',
+          'Từ khóa tìm kiếm không được chứa thẻ HTML'
+        );
+        this.userSearchTerm = HtmlValidator.sanitizeHtml(this.userSearchTerm);
+      }
+      
       const term = this.userSearchTerm.toLowerCase();
       filtered = filtered.filter(user => 
         user.name.toLowerCase().includes(term) ||

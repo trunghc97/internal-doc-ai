@@ -12,6 +12,7 @@ import {
 } from '../atoms';
 import { FormFieldComponent } from './form-field.component';
 import { ApiService } from '../../services/api.service';
+import { HtmlValidator } from '../../shared/validators';
 
 export interface User {
   id: string;
@@ -204,8 +205,11 @@ export interface ShareRequest {
               [(ngModel)]="message"
               placeholder="Thêm tin nhắn cho người nhận..."
               rows="3"
-              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+              [class]="'w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none ' + (messageError ? 'border-red-300' : 'border-gray-300')"
             ></textarea>
+            <p *ngIf="messageError" class="text-sm text-red-600 mt-1">
+              {{ messageError }}
+            </p>
           </div>
         </div>
 
@@ -263,6 +267,7 @@ export class ShareDialogComponent implements OnInit {
   message = '';
   isLoading = false;
   isSharing = false;
+  messageError = '';
 
   constructor(private apiService: ApiService) {}
 
@@ -369,6 +374,13 @@ export class ShareDialogComponent implements OnInit {
 
   onShare() {
     if (this.selectedUsers.length === 0) return;
+
+    // Validate message for HTML
+    this.messageError = '';
+    if (this.message.trim() && HtmlValidator.containsHtml(this.message)) {
+      this.messageError = 'Tin nhắn không được chứa thẻ HTML';
+      return;
+    }
 
     this.isSharing = true;
     
