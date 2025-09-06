@@ -39,8 +39,8 @@ public class User implements UserDetails {
     @Column(nullable = false)
     private boolean enabled;
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
-    private List<Document> documents;
+    // @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    // private List<Document> documents;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

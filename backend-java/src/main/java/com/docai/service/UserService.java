@@ -28,19 +28,26 @@ public class UserService {
 
     @Transactional
     public AuthResponse register(RegisterRequest request) {
+        log.info("Starting registration for user: {}", request.getUsername());
+        
         // Validate username and email
         if (userRepository.existsByUsername(request.getUsername())) {
+            log.warn("Username already exists: {}", request.getUsername());
             throw new RuntimeException("Username already exists");
         }
         if (userRepository.existsByEmail(request.getEmail())) {
+            log.warn("Email already exists: {}", request.getEmail());
             throw new RuntimeException("Email already exists");
         }
 
         try {
             // Decrypt password
+            log.debug("Decrypting password for user: {}", request.getUsername());
             String decryptedPassword = rsaEncryptionService.decrypt(request.getPassword());
+            log.debug("Password decrypted successfully for user: {}", request.getUsername());
             
             // Create new user with encoded password
+            log.debug("Creating user object for: {}", request.getUsername());
             User user = User.builder()
                 .username(request.getUsername())
                 .password(passwordEncoder.encode(decryptedPassword))
@@ -48,15 +55,20 @@ public class UserService {
                 .role(User.Role.USER)
                 .enabled(true)
                 .build();
+            
+            log.debug("User object created, saving to database for: {}", request.getUsername());
 
             // Save user and generate token
             user = userRepository.save(user);
+            log.info("User saved to database with ID: {} for username: {}", user.getId(), user.getUsername());
+            
             String token = jwtTokenProvider.generateToken(user);
+            log.debug("JWT token generated for user: {}", user.getUsername());
             
             log.info("User registered successfully: {}", user.getUsername());
             return new AuthResponse(token, user.getUsername(), user.getRole().name());
         } catch (Exception e) {
-            log.error("Registration failed for user {}: {}", request.getUsername(), e.getMessage());
+            log.error("Registration failed for user {}: {}", request.getUsername(), e.getMessage(), e);
             throw new RuntimeException("Registration failed: " + e.getMessage());
         }
     }

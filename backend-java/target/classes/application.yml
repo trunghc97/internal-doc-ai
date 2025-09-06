@@ -8,7 +8,7 @@ server:
 
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/docai
+    url: jdbc:postgresql://postgres:5432/docai
     username: docai_user
     password: docai_password
     driver-class-name: org.postgresql.Driver

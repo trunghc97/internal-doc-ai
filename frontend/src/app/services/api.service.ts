@@ -96,7 +96,7 @@ export interface PaginatedResponse<T> {
   providedIn: 'root'
 })
 export class ApiService {
-  private baseUrl = 'http://192.168.100.133';
+  private baseUrl = 'http://localhost:8080/api';
   private llmBaseUrl = 'http://192.168.0.63';
 
   constructor(
@@ -224,14 +224,26 @@ export class ApiService {
   uploadDocument(file: File, metadata: DocumentMetadata): Observable<DocumentUploadResponse> {
     const formData = new FormData();
     formData.append('file', file);
-    formData.append('type', metadata.type);
-    formData.append('securityLevel', metadata.securityLevel);
-    formData.append('department', metadata.department);
-    if (metadata.notes) {
-      formData.append('notes', metadata.notes);
+    
+    // Tạo sensitiveInfo từ metadata và tên file
+    let sensitiveInfo = `File: ${file.name}`;
+    if (metadata.notes && metadata.notes.trim()) {
+      sensitiveInfo += `; Notes: ${metadata.notes.trim()}`;
     }
+    if (metadata.department) {
+      sensitiveInfo += `; Department: ${metadata.department}`;
+    }
+    if (metadata.type) {
+      sensitiveInfo += `; Type: ${metadata.type}`;
+    }
+    if (metadata.securityLevel) {
+      sensitiveInfo += `; Security: ${metadata.securityLevel}`;
+    }
+    
+    formData.append('sensitiveInfo', sensitiveInfo);
+    console.log('Sending upload request with sensitiveInfo:', sensitiveInfo);
 
-    return this.http.post<DocumentUploadResponse>(`${this.baseUrl}/documents/upload`, formData)
+    return this.http.post<DocumentUploadResponse>(`${this.baseUrl}/documents`, formData)
       .pipe(catchError(this.handleError.bind(this)));
   }
 

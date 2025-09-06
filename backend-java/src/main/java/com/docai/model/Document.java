@@ -27,15 +27,20 @@ public class Document {
     @Column(columnDefinition = "TEXT")
     private String sensitiveInfo;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+    @Column(name = "owner_user_id", nullable = false)
+    private Long ownerUserId;
 
     @Column(nullable = false)
     private LocalDateTime uploadedAt;
 
     @Column(nullable = false)
     private LocalDateTime lastModifiedAt;
+
+    @Column(name = "risk_score")
+    private Integer riskScore;
+
+    @Column(length = 20)
+    private String status;
 
     @PrePersist
     protected void onCreate() {

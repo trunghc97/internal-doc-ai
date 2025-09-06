@@ -7,6 +7,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -26,13 +28,13 @@ public class DocumentController {
         return ResponseEntity.ok(documentService.uploadDocument(file, user));
     }
     
-    @PostMapping("/test-upload")
-    public ResponseEntity<Document> uploadDocumentFromTestFile(
-            @RequestParam("filename") String filename,
-            @AuthenticationPrincipal User user) throws Exception {
-        log.info("Mock upload file từ testFile: {}", filename);
-        return ResponseEntity.ok(documentService.uploadDocumentFromTestFile(filename, user));
-    }
+    // @PostMapping("/test-upload")
+    // public ResponseEntity<Document> uploadDocumentFromTestFile(
+    //         @RequestParam("filename") String filename,
+    //         @AuthenticationPrincipal User user) throws Exception {
+    //     log.info("Mock upload file từ testFile: {}", filename);
+    //     return ResponseEntity.ok(documentService.uploadDocumentFromTestFile(filename, user));
+    // }
 
     @GetMapping
     public ResponseEntity<Page<Document>> getDocuments(
@@ -54,5 +56,22 @@ public class DocumentController {
             @AuthenticationPrincipal User user) {
         documentService.deleteDocument(id, user);
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/{id}/download")
+    public ResponseEntity<byte[]> downloadDocument(
+            @PathVariable Long id,
+            @AuthenticationPrincipal User user) {
+        Document document = documentService.getDocument(id, user);
+        byte[] content = documentService.getDocumentContent(document);
+        
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.parseMediaType(document.getMimeType()));
+        headers.setContentDispositionFormData("attachment", document.getFilename());
+        headers.setContentLength(content.length);
+        
+        return ResponseEntity.ok()
+                .headers(headers)
+                .body(content);
     }
 }
