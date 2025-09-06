@@ -27,6 +27,7 @@ import java.util.List;
 public class DocumentService {
     private final DocumentRepository documentRepository;
     private final PythonApiService pythonApiService;
+    private final MalwareDetectionService malwareDetectionService;
     
     // Đường dẫn tới thư mục testFile
     private static final String TEST_FILE_DIR = "/Users/macus/project/java/internal-doc-ai/backend-java/testFile/";
@@ -53,11 +54,29 @@ public class DocumentService {
         // Xác định content type từ extension
         String contentType = determineContentType(filename);
         
-        // Gọi API Python để phát hiện thông tin nhạy cảm (mock với file path)
+        // Tạo mock MultipartFile để scan mã độc và phát hiện thông tin nhạy cảm
+        MockMultipartFile mockFile = new MockMultipartFile(filename, fileBytes, contentType);
+        
+        // 1. SCAN MÃ ĐỘC TRƯỚC KHI XỬ LÝ FILE
+        log.info("Bắt đầu scan mã độc cho test file: {}", filename);
+        MalwareDetectionService.MalwareDetectionResult scanResult = malwareDetectionService.scanFile(mockFile);
+        
+        // Kiểm tra kết quả scan
+        if (scanResult.isThreatDetected()) {
+            log.error("PHÁT HIỆN MÃ ĐỘC trong test file {}: {}", 
+                filename, scanResult.getThreats());
+            throw new SecurityException("Test file bị từ chối: Phát hiện mã độc hoặc nội dung nguy hiểm. " +
+                "Chi tiết: " + scanResult.getThreats().toString());
+        }
+        
+        if (scanResult.isSuspicious()) {
+            log.warn("Test file {} có dấu hiệu đáng nghi: {}", 
+                filename, scanResult.getWarnings());
+        }
+        
+        // 2. Gọi API Python để phát hiện thông tin nhạy cảm
         String detectedSensitiveInfo = sensitiveInfo;
         try {
-            // Tạo mock MultipartFile để gọi PythonApiService
-            MockMultipartFile mockFile = new MockMultipartFile(filename, fileBytes, contentType);
             List<PythonApiService.SensitiveInfo> sensitiveInfoList = pythonApiService.detectSensitiveInfo(mockFile);
             if (!sensitiveInfoList.isEmpty()) {
                 StringBuilder sb = new StringBuilder();
@@ -82,10 +101,34 @@ public class DocumentService {
         document.setContent(fileContent);
         document.setMimeType(contentType);
         document.setFileSize((long) fileBytes.length);
-        document.setSensitiveInfo(detectedSensitiveInfo);
         document.setUser(user);
         document.setUploadedAt(LocalDateTime.now());
         document.setLastModifiedAt(LocalDateTime.now());
+        
+        // Thêm thông tin scan mã độc vào sensitive info
+        StringBuilder scanInfo = new StringBuilder();
+        if (detectedSensitiveInfo != null && !detectedSensitiveInfo.trim().isEmpty()) {
+            scanInfo.append(detectedSensitiveInfo).append("; ");
+        }
+        
+        scanInfo.append("MALWARE_SCAN: ");
+        if (scanResult.isClean()) {
+            scanInfo.append("CLEAN");
+        } else {
+            scanInfo.append("SUSPICIOUS - ");
+            if (!scanResult.getWarnings().isEmpty()) {
+                scanInfo.append("Warnings: ");
+                for (MalwareDetectionService.ThreatInfo warning : scanResult.getWarnings()) {
+                    scanInfo.append(warning.getType()).append("=").append(warning.getDescription()).append("; ");
+                }
+            }
+        }
+        scanInfo.append(" [Hash: ").append(scanResult.getFileHash()).append("]");
+        
+        document.setSensitiveInfo(scanInfo.toString());
+        
+        log.info("Test file {} đã được scan và lưu thành công. Trạng thái: {}", 
+            filename, scanResult.isClean() ? "CLEAN" : "SUSPICIOUS");
 
         return documentRepository.save(document);
     }
@@ -111,6 +154,24 @@ public class DocumentService {
 
     @Transactional
     public Document uploadDocument(MultipartFile file, User user, String sensitiveInfo) throws IOException {
+        // 1. SCAN MÃ ĐỘC TRƯỚC KHI XỬ LÝ FILE
+        log.info("Bắt đầu scan mã độc cho file: {}", file.getOriginalFilename());
+        MalwareDetectionService.MalwareDetectionResult scanResult = malwareDetectionService.scanFile(file);
+        
+        // Kiểm tra kết quả scan
+        if (scanResult.isThreatDetected()) {
+            log.error("PHÁT HIỆN MÃ ĐỘC trong file {}: {}", 
+                file.getOriginalFilename(), scanResult.getThreats());
+            throw new SecurityException("File bị từ chối: Phát hiện mã độc hoặc nội dung nguy hiểm. " +
+                "Chi tiết: " + scanResult.getThreats().toString());
+        }
+        
+        if (scanResult.isSuspicious()) {
+            log.warn("File {} có dấu hiệu đáng nghi: {}", 
+                file.getOriginalFilename(), scanResult.getWarnings());
+            // Có thể cho phép upload nhưng đánh dấu cảnh báo
+        }
+        
         String contentType = file.getContentType();
         if (contentType == null) {
             // Nếu không có contentType, thử đoán từ tên file
@@ -160,6 +221,31 @@ public class DocumentService {
         document.setUser(user);
         document.setUploadedAt(LocalDateTime.now());
         document.setLastModifiedAt(LocalDateTime.now());
+        
+        // Thêm thông tin scan mã độc vào sensitive info
+        StringBuilder scanInfo = new StringBuilder();
+        if (detectedSensitiveInfo != null && !detectedSensitiveInfo.trim().isEmpty()) {
+            scanInfo.append(detectedSensitiveInfo).append("; ");
+        }
+        
+        scanInfo.append("MALWARE_SCAN: ");
+        if (scanResult.isClean()) {
+            scanInfo.append("CLEAN");
+        } else {
+            scanInfo.append("SUSPICIOUS - ");
+            if (!scanResult.getWarnings().isEmpty()) {
+                scanInfo.append("Warnings: ");
+                for (MalwareDetectionService.ThreatInfo warning : scanResult.getWarnings()) {
+                    scanInfo.append(warning.getType()).append("=").append(warning.getDescription()).append("; ");
+                }
+            }
+        }
+        scanInfo.append(" [Hash: ").append(scanResult.getFileHash()).append("]");
+        
+        document.setSensitiveInfo(scanInfo.toString());
+        
+        log.info("File {} đã được scan và lưu thành công. Trạng thái: {}", 
+            file.getOriginalFilename(), scanResult.isClean() ? "CLEAN" : "SUSPICIOUS");
 
         return documentRepository.save(document);
     }
