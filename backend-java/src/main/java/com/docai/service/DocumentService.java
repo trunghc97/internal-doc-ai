@@ -36,7 +36,9 @@ public class DocumentService {
      * Mock method để lấy file từ thư mục testFile thay vì MultipartFile
      */
     @Transactional
-    public Document uploadDocumentFromTestFile(String filename, User user, String sensitiveInfo) throws IOException {
+    public Document uploadDocumentFromTestFile(String filename, User user) throws IOException {
+        // Đặt giá trị mặc định cho sensitive info
+        String sensitiveInfo = "Test file từ testFile directory";
         // Tạo đường dẫn tới file test
         Path testFilePath = Paths.get(TEST_FILE_DIR, filename);
         File testFile = testFilePath.toFile();
@@ -153,7 +155,9 @@ public class DocumentService {
     }
 
     @Transactional
-    public Document uploadDocument(MultipartFile file, User user, String sensitiveInfo) throws IOException {
+    public Document uploadDocument(MultipartFile file, User user) throws IOException {
+        // Đặt giá trị mặc định cho sensitive info
+        String sensitiveInfo = "Tài liệu được upload bởi người dùng";
         // 1. SCAN MÃ ĐỘC TRƯỚC KHI XỬ LÝ FILE
         log.info("Bắt đầu scan mã độc cho file: {}", file.getOriginalFilename());
         MalwareDetectionService.MalwareDetectionResult scanResult = malwareDetectionService.scanFile(file);
