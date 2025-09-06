@@ -4,6 +4,8 @@ import { FormsModule } from '@angular/forms';
 import { FileSizePipe } from '../../shared/pipes/file-size.pipe';
 import { ApiService, DocumentMetadata, ShareRequest, PaginatedResponse } from '../../services/api.service';
 import { NotificationService } from '../../services/notification.service';
+import { AuthService } from '../../services/auth.service';
+import { HtmlValidator } from '../../shared/validators';
 import {
   ButtonComponent,
   CardComponent,
@@ -165,7 +167,8 @@ export class DashboardComponent implements OnInit {
 
   constructor(
     private apiService: ApiService,
-    private notificationService: NotificationService
+    private notificationService: NotificationService,
+    private authService: AuthService
   ) {
     this.filterDocuments();
   }
@@ -631,7 +634,16 @@ export class DashboardComponent implements OnInit {
   filterUsers() {
     let filtered = [...this.users];
     
+    // Validate and sanitize user search term
     if (this.userSearchTerm.trim()) {
+      if (HtmlValidator.containsHtml(this.userSearchTerm)) {
+        this.notificationService.warning(
+          'Tìm kiếm không hợp lệ',
+          'Từ khóa tìm kiếm không được chứa thẻ HTML'
+        );
+        this.userSearchTerm = HtmlValidator.sanitizeHtml(this.userSearchTerm);
+      }
+      
       const term = this.userSearchTerm.toLowerCase();
       filtered = filtered.filter(user => 
         user.name.toLowerCase().includes(term) ||
@@ -785,6 +797,20 @@ export class DashboardComponent implements OnInit {
   // Phương thức đếm số phòng ban
   getDepartmentCount(): number {
     return [...new Set(this.users.map(user => user.department))].length;
+  }
+
+  // Logout method
+  logout(): void {
+    this.authService.logout();
+    this.notificationService.success(
+      'Đăng xuất thành công',
+      'Bạn đã đăng xuất khỏi hệ thống.'
+    );
+  }
+
+  // Get current user info
+  get currentUser() {
+    return this.authService.user;
   }
 
   // Phương thức đếm số lượng tài liệu có rủi ro (sensitivityScore > 70)

@@ -13,12 +13,13 @@
     </div>
 
     <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="space-y-4">
-      <!-- Username Field -->
+      <!-- Email Field -->
       <div class="space-y-2">
-        <label class="text-sm font-medium text-gray-700">Tên đăng nhập</label>
+        <label class="text-sm font-medium text-gray-700">Email</label>
         <app-input
           formControlName="username"
-          placeholder="Nhập tên đăng nhập"
+          type="email"
+          placeholder="Nhập địa chỉ email"
           [error]="!!getFieldError('username')"
         ></app-input>
         <p *ngIf="getFieldError('username')" class="text-sm text-red-600">

@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
+import { HtmlValidator } from '../../shared/validators';
 
 @Component({
   selector: 'app-register',
@@ -19,10 +20,25 @@ export class RegisterComponent {
     private router: Router
   ) {
     this.registerForm = this.fb.group({
-      username: ['', [Validators.required, Validators.minLength(3)]],
-      email: ['', [Validators.required, Validators.email]],
-      password: ['', [Validators.required, Validators.minLength(6)]],
-      confirmPassword: ['', [Validators.required]]
+      username: ['', [
+        Validators.required, 
+        Validators.minLength(3),
+        HtmlValidator.noHtml
+      ]],
+      email: ['', [
+        Validators.required, 
+        Validators.email,
+        HtmlValidator.noHtml
+      ]],
+      password: ['', [
+        Validators.required, 
+        Validators.minLength(6),
+        HtmlValidator.noHtml
+      ]],
+      confirmPassword: ['', [
+        Validators.required,
+        HtmlValidator.noHtml
+      ]]
     }, { validators: this.passwordMatchValidator });
   }
 
@@ -84,18 +100,22 @@ export class RegisterComponent {
         case 'username':
           if (control.errors['required']) return 'Vui lòng nhập tên đăng nhập';
           if (control.errors['minlength']) return 'Tên đăng nhập phải có ít nhất 3 ký tự';
+          if (control.errors['htmlNotAllowed']) return 'Không được phép nhập thẻ HTML';
           break;
         case 'email':
           if (control.errors['required']) return 'Vui lòng nhập email';
           if (control.errors['email']) return 'Email không hợp lệ';
+          if (control.errors['htmlNotAllowed']) return 'Không được phép nhập thẻ HTML';
           break;
         case 'password':
           if (control.errors['required']) return 'Vui lòng nhập mật khẩu';
           if (control.errors['minlength']) return 'Mật khẩu phải có ít nhất 6 ký tự';
+          if (control.errors['htmlNotAllowed']) return 'Không được phép nhập thẻ HTML';
           break;
         case 'confirmPassword':
           if (control.errors['required']) return 'Vui lòng xác nhận mật khẩu';
           if (control.errors['mismatch']) return 'Mật khẩu xác nhận không khớp';
+          if (control.errors['htmlNotAllowed']) return 'Không được phép nhập thẻ HTML';
           break;
       }
     }
