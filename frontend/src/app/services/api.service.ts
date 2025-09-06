@@ -25,6 +25,36 @@ export interface TransferRequest extends PointsTransaction {
   recipient: string;
 }
 
+export interface DocumentMetadata {
+  type: string;
+  securityLevel: string;
+  department: string;
+  notes?: string;
+}
+
+export interface DocumentUploadResponse {
+  id: string;
+  name: string;
+  size: number;
+  uploadTime: Date;
+  status: 'analyzing' | 'completed' | 'error';
+  type: string;
+  securityLevel: string;
+  department: string;
+  notes?: string;
+}
+
+export interface DocumentAnalysisResult {
+  id: string;
+  sensitivityScore: number;
+  findings: Array<{
+    type: string;
+    description: string;
+    page: number;
+    paragraph: number;
+  }>;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -150,6 +180,46 @@ export class ApiService {
 
   getLlmHealth(): Observable<any> {
     return this.http.get(`${this.llmBaseUrl}/health`)
+      .pipe(catchError(this.handleError.bind(this)));
+  }
+
+  // Document Management APIs
+  uploadDocument(file: File, metadata: DocumentMetadata): Observable<DocumentUploadResponse> {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('type', metadata.type);
+    formData.append('securityLevel', metadata.securityLevel);
+    formData.append('department', metadata.department);
+    if (metadata.notes) {
+      formData.append('notes', metadata.notes);
+    }
+
+    return this.http.post<DocumentUploadResponse>(`${this.baseUrl}/documents/upload`, formData)
+      .pipe(catchError(this.handleError.bind(this)));
+  }
+
+  getDocuments(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.baseUrl}/documents`)
+      .pipe(catchError(this.handleError.bind(this)));
+  }
+
+  getDocumentById(id: string): Observable<any> {
+    return this.http.get<any>(`${this.baseUrl}/documents/${id}`)
+      .pipe(catchError(this.handleError.bind(this)));
+  }
+
+  getDocumentAnalysis(id: string): Observable<DocumentAnalysisResult> {
+    return this.http.get<DocumentAnalysisResult>(`${this.baseUrl}/documents/${id}/analysis`)
+      .pipe(catchError(this.handleError.bind(this)));
+  }
+
+  deleteDocument(id: string): Observable<any> {
+    return this.http.delete(`${this.baseUrl}/documents/${id}`)
+      .pipe(catchError(this.handleError.bind(this)));
+  }
+
+  downloadDocument(id: string): Observable<Blob> {
+    return this.http.get(`${this.baseUrl}/documents/${id}/download`, { responseType: 'blob' })
       .pipe(catchError(this.handleError.bind(this)));
   }
 }
