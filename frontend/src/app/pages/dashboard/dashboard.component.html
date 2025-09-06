@@ -61,13 +61,13 @@
         <app-card-header>
           <app-card-title>Tải lên văn bản</app-card-title>
           <app-card-description>
-            Hỗ trợ các định dạng: PDF, DOC, DOCX, TXT
+            Hỗ trợ các định dạng: PDF, DOC, DOCX
           </app-card-description>
         </app-card-header>
         <app-card-content>
           <div class="space-y-6">
             <app-file-upload
-              [accept]="'.pdf,.doc,.docx,.txt'"
+              [accept]="'.pdf,.doc,.docx'"
               (filesSelected)="onFilesSelected($event)"
             ></app-file-upload>
 

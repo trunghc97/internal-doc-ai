@@ -60,8 +60,14 @@ export class ApiService {
 
   async login(data: LoginRequest): Promise<any> {
     try {
-      const publicKeyResponse = await this.getPublicKey().toPromise();
-      const publicKey = publicKeyResponse.publicKey;
+      //const publicKeyResponse = await this.getPublicKey().toPromise();
+      const publicKey = `MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAkeynfKnC4SZd6kQRNB4B
+        oUYM1XOlKcgah/RTcE0MWeMtIT1zkF1dLRS2EXaBpTe4MYcJPM1hwYQsWavCpPwd
+        +SWKji/FhIYx4cVmRl34gb0f0tAJsFBpc6sUFrmRxlysw9l10WmZORypS/p6ie3V
+        4xjx83ys1eztH0CcNPuSrNy4RlGT0Mo+1IvshzV3ys/UKecBuQtI2XdSz9EJKgyy
+        48B15tEqoakE4FmhoD2ISNFq8l0tWF7Z94gXKg+SKS2jtQYHw4VtciRkA9UHEOlc
+        x8F2xkX+3TfGagyxkRAbuj2AYajzRjxQhl/aUBbxxKhiByaiQVT6/CnFSpAfqs9U
+        HwIDAQAB`;
       const encryptedPassword = await this.encryptionService.encrypt(publicKey, data.password);
 
       // Convert Observable to Promise
