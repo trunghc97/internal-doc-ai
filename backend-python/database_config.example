@@ -1,0 +1,15 @@
+# Database Configuration Example
+# Copy this file to .env and update with your database credentials
+
+DB_POSTGRES_HOST=localhost
+DB_POSTGRES_PORT=5432
+DB_POSTGRES_USER=postgres
+DB_POSTGRES_PASSWORD=postgres
+DB_POSTGRES_DB=sensitive_data_db
+
+DB_POOL_SIZE=5
+DB_MAX_OVERFLOW=10
+DB_POOL_TIMEOUT=30
+DB_POOL_RECYCLE=3600
+
+DB_ENVIRONMENT=development

@@ -60,6 +60,13 @@ rsa:
     voH27HeOvMk9curfOLC6n0E=
     -----END PRIVATE KEY-----
 
+python:
+  api:
+    url: http://localhost:8081
+
+file:
+  upload: 10MB
+
 logging:
   level:
     root: INFO

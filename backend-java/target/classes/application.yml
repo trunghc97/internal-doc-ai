@@ -1,28 +1,80 @@
 server:
   port: 8080
+  servlet:
+    context-path: /
+  error:
+    include-message: always
+    include-binding-errors: always
 
 spring:
-  data:
-    mongodb:
-      host: mongodb
-      port: 27017
-      database: loyalty
-      authentication-database: admin
-
-blockchain:
-  service:
-    url: http://backend-go:8081
+  datasource:
+    url: jdbc:postgresql://localhost:5432/docai
+    username: docai_user
+    password: docai_password
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+    show-sql: true
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
 
 jwt:
   secret: c9c1b2f3e4a5d6b7c8a9e0f1d2c3b4a5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1
   expiration: 86400000 # 24 hours
 
 rsa:
-  private-key: classpath:keys/private.key
-  public-key: classpath:keys/public.key
+  private-key-value: |
+    -----BEGIN PRIVATE KEY-----
+    MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQCOKp+JvHmX0ISQ
+    WJ694gWhk++UhRngSkb9CjYH6oozg0yE+NPzSLmGTdLopQ2CxltL/4HlxPfqi7Lo
+    QQrPaTmlt7JTSCDoLG5rKVsT3LtNb8PzqefYNSRl4e4v4QXtar/Ii4e2qiyRwtNy
+    JkQrUfYFNIL4WSXBmi4k8DQP85wBYvkDlb8ekBQZ2Zci+mBYGN9M+jASqZz52pro
+    8A1mXHtPnxXaptQzdpoZlRB1YI4IsbTRBFFNgnWSKuAAWUYpp4jhM3ERMkIZVo5V
+    J9SyyZrtiB8BogA2uqzSURpdgC2Cjqk3iW/b4c/5vjRHZKJvobcoqfYn82PNd2+a
+    d38blyk7AgMBAAECggEAAgm7YsKYbaQ4Gkei8u7oDMJtp0/nKI94CA2a668hjw59
+    TNSyWST8P+Aiu2IOWQcV7Pd7ObuCoFKjXG/+Qy3rfSQugsIgcqOca53ap+S8rKYD
+    BZ20bKWKYYmFHBuaNaaXnDzf068J14cW9+ZziLlykO2JSR0iDO30ZmQpIudnn59x
+    oN/7D83GPqdW2b1p/AzDuLy1m/kE3Ib8me6wSvPK+0BsdALPIBosOJuvho783nS2
+    OwP3peHz/2rieVphmyG5lRUHVsKLWMLOrup7q+q6zmTXp3n03iok49L6ROBd/JAD
+    5eN5KYlCcGampWPh/+fPIJ27pD6fUiFW6thtWWVFGQKBgQDCuJDelYBsQpvSDAKU
+    J3SICEoV5a61ji9UqyEs9LHIC3MrL2sdIj0KsG2ntva4zfbnaDgEZJWybWgfhrGC
+    gPnNprTynHoPyIZIBwmjyxNYZaUx0CvFVvGtjvidxVEUK1xU6NK3mbTWByj15eCY
+    tqCSNWcTuNbfmzsza4LeX9R4QwKBgQC66BO+q3Bf7JvGs/vS4DDejozbdFYYdJDx
+    ywNE0QNpi/9PO9n98Alg4B6EVaOenIepG1u4LHlC1pbpSILai0vZzKb6xFErAvod
+    x7zA8N37YOFqLVgprLDeB0x40ccMAgtf6hDDJ8QThHlv9kjwTY+lLMsxdfzj5/B4
+    n/Fw9edXqQKBgQCvk+jdK4UvGSiTz8yLdsA24PKcqAxPHTREbkJt3P5pWRmx+QHm
+    tTbBarCVp/70SJO3uVu5alEpIEnhE30AJfgZnZZPpRTTIocib2Yb0UNSU+UO85xk
+    Rq+JRf+bk442V5rb3UwTzX8n9jDS+UL5sMM80vZs7CCkY76P8QOCLHrTLQKBgAY5
+    D987SgSHljApcer1d+sRB/OOjgdGakUCo1s5MknjVV7H+VwRD97f12REjawMPiAN
+    PyKEqIznJCMkPOcV2DKqM60JuEIcWUOAkPJDksB520dztwm8LC9YQt2K7nuh3csV
+    ufUlb8vOj1SA+LC3hF7VfPZqnT7hTApYGOvP5CHxAoGAUWMVJBmYj1KplHvK9CJS
+    /yXnxWlBGhmGMEMoEz5AfmmcikfelztOUebY5Lg5hdoCFaoBCjA0hUalIQh6ICyb
+    rcTHz6k81nih3ewHJLC27RsrwezhzG5ImrZgTE8qKp3OxuCyAF7eplCeowT4+QIX
+    voH27HeOvMk9curfOLC6n0E=
+    -----END PRIVATE KEY-----
+
+python:
+  api:
+    url: http://localhost:8081
+
+file:
+  upload:
+    # 10MB
+
+
 
 logging:
   level:
-    org.springframework.web: INFO
-    com.loyalty: DEBUG
-    org.mongodb: INFO
+    root: INFO
+    org.springframework.web: DEBUG
+    org.springframework.security: DEBUG
+    com.docai: DEBUG
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE

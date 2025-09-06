@@ -36,13 +36,16 @@ services:
       context: ./backend-python
       dockerfile: Dockerfile
     ports:
-      - "8081:8081"
+      - "8000:8000"
     environment:
-      - POSTGRES_HOST=postgres
-      - POSTGRES_DB=docai
-      - POSTGRES_USER=docai_user
-      - POSTGRES_PASSWORD=docai_password
+      - DB_POSTGRES_HOST=postgres
+      - DB_POSTGRES_PORT=5432
+      - DB_POSTGRES_USER=docai_user
+      - DB_POSTGRES_PASSWORD=docai_password
+      - DB_POSTGRES_DB=docai_db
+      - DB_ENVIRONMENT=production
     volumes:
+      - ./backend-python/files:/app/files
       - ./uploads:/app/uploads
     depends_on:
       - postgres
@@ -52,7 +55,7 @@ services:
   postgres:
     image: postgres:15-alpine
     environment:
-      - POSTGRES_DB=docai
+      - POSTGRES_DB=docai_db
       - POSTGRES_USER=docai_user
       - POSTGRES_PASSWORD=docai_password
     ports:
