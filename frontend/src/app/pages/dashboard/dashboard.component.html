@@ -75,7 +75,7 @@
         </div>
 
         <!-- Biểu đồ phân bố theo phòng ban -->
-        <div class="mt-8">
+        <!-- <div class="mt-8">
           <h3 class="text-lg font-medium text-gray-900 mb-4">Phân bố theo phòng ban</h3>
           <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
             <div *ngFor="let dept of getDepartmentStats()" class="bg-white p-4 rounded-lg border border-gray-200">
@@ -92,28 +92,34 @@
               </div>
             </div>
           </div>
-        </div>
+        </div> -->
       </app-card-content>
     </app-card>
   </div>
 
   <!-- Thanh tìm kiếm và lọc -->
-  <div class="mb-6">
-    <div>
-      <div class="col-span-1">
-        <app-input
-          [placeholder]="'Tìm kiếm văn bản...'"
-          [(ngModel)]="searchTerm"
-          (ngModelChange)="filterDocuments()"
-        >
-          <span prefix>
-            <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
-          </span>
-        </app-input>
+  <div class="mb-6 bg-white rounded-lg shadow p-4">
+    <div class="grid grid-cols-12 gap-4 items-end">
+      <!-- Ô tìm kiếm -->
+      <div class="col-span-12 md:col-span-4">
+        <app-form-field>
+          <app-form-label>Tìm kiếm</app-form-label>
+          <app-input
+            [placeholder]="'Tìm kiếm văn bản...'"
+            [(ngModel)]="searchTerm"
+            (ngModelChange)="filterDocuments()"
+          >
+            <span prefix>
+              <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+            </span>
+          </app-input>
+        </app-form-field>
       </div>
-      <div class="col-span-1">
+
+      <!-- Lọc trạng thái -->
+      <div class="col-span-12 md:col-span-2">
         <app-form-field>
           <app-form-label>Trạng thái</app-form-label>
           <select
@@ -128,7 +134,9 @@
           </select>
         </app-form-field>
       </div>
-      <div class="col-span-1">
+
+      <!-- Lọc thời gian -->
+      <div class="col-span-12 md:col-span-2">
         <app-form-field>
           <app-form-label>Thời gian</app-form-label>
           <select
@@ -143,103 +151,32 @@
           </select>
         </app-form-field>
       </div>
+
+      <!-- Nút tải lên -->
+      <div class="col-span-12 md:col-span-4 flex justify-end">
+        <app-button
+          [variant]="'primary'"
+          (click)="showUploadDialog = true"
+          class="w-full md:w-auto"
+        >
+          <svg class="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+          </svg>
+          Tải lên văn bản
+        </app-button>
+      </div>
     </div>
   </div>
 
-  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-    <!-- Khu vực upload văn bản -->
-    <div class="lg:col-span-2">
-      <app-card>
-        <app-card-header>
-          <app-card-title>Tải lên văn bản</app-card-title>
-          <app-card-description>
-            Hỗ trợ các định dạng: PDF, DOC, DOCX
-          </app-card-description>
-        </app-card-header>
-        <app-card-content>
-          <div class="space-y-6">
-            <app-file-upload
-              [accept]="'.pdf,.doc,.docx'"
-              (filesSelected)="onFilesSelected($event)"
-            ></app-file-upload>
+  <!-- Upload Dialog -->
+  <app-upload-dialog
+    *ngIf="showUploadDialog"
+    (close)="showUploadDialog = false"
+    (upload)="handleUpload($event)"
+  ></app-upload-dialog>
 
-            <div *ngIf="selectedFiles.length > 0" class="mt-6">
-              <h3 class="text-lg font-medium text-gray-900 mb-4">Thông tin văn bản</h3>
-              
-              <div class="space-y-4">
-                <app-form-field>
-                  <app-form-label>Loại văn bản</app-form-label>
-                  <select
-                    class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                    [(ngModel)]="documentMetadata.type"
-                  >
-                    <option value="">Chọn loại văn bản</option>
-                    <option value="contract">Hợp đồng</option>
-                    <option value="report">Báo cáo</option>
-                    <option value="policy">Chính sách</option>
-                    <option value="other">Khác</option>
-                  </select>
-                </app-form-field>
-
-                <app-form-field>
-                  <app-form-label>Mức độ bảo mật</app-form-label>
-                  <select
-                    class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                    [(ngModel)]="documentMetadata.securityLevel"
-                  >
-                    <option value="">Chọn mức độ bảo mật</option>
-                    <option value="public">Công khai</option>
-                    <option value="internal">Nội bộ</option>
-                    <option value="confidential">Bảo mật</option>
-                    <option value="top_secret">Tối mật</option>
-                  </select>
-                </app-form-field>
-
-                <app-form-field>
-                  <app-form-label>Phòng ban</app-form-label>
-                  <select
-                    class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                    [(ngModel)]="documentMetadata.department"
-                  >
-                    <option value="">Chọn phòng ban</option>
-                    <option value="hr">Nhân sự</option>
-                    <option value="finance">Tài chính</option>
-                    <option value="tech">Kỹ thuật</option>
-                    <option value="sales">Kinh doanh</option>
-                    <option value="other">Khác</option>
-                  </select>
-                </app-form-field>
-
-                <app-form-field>
-                  <app-form-label>Ghi chú</app-form-label>
-                  <textarea
-                    class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                    rows="3"
-                    [(ngModel)]="documentMetadata.notes"
-                    placeholder="Nhập ghi chú về văn bản..."
-                  ></textarea>
-                </app-form-field>
-
-                <div class="flex justify-end space-x-3">
-                  <app-button
-                    [variant]="'ghost'"
-                    (click)="cancelUpload()"
-                  >
-                    Hủy
-                  </app-button>
-                  <app-button
-                    [variant]="'primary'"
-                    (click)="uploadDocuments()"
-                    [disabled]="!isValidMetadata()"
-                  >
-                    Tải lên
-                  </app-button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </app-card-content>
-      </app-card>
+  <div class="">
+    <!-- Khu vực danh sách văn bản -->
 
       <!-- Danh sách văn bản đã upload -->
       <div class="mt-6">
@@ -396,7 +333,7 @@
     </div>
 
     <!-- Khu vực hiển thị kết quả phân tích -->
-    <div class="lg:col-span-1">
+    <!-- <div class="lg:col-span-1">
       <app-card>
         <app-card-header>
           <app-card-title>Kết quả phân tích</app-card-title>
@@ -439,6 +376,5 @@
           </div>
         </app-card-content>
       </app-card>
-    </div>
+    </div> -->
   </div>
-</div>

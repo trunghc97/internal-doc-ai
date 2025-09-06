@@ -10,14 +10,14 @@ import {
   CardDescriptionComponent,
   CardContentComponent,
   BadgeComponent,
-  FileUploadComponent,
   InputComponent
 } from '../../components/atoms';
 import {
   FormFieldComponent,
   FormLabelComponent,
   FormDescriptionComponent,
-  FormMessageComponent
+  FormMessageComponent,
+  UploadDialogComponent
 } from '../../components/molecules';
 
 interface Document {
@@ -39,13 +39,6 @@ interface Document {
   }>;
 }
 
-interface DocumentMetadata {
-  type: string;
-  securityLevel: string;
-  department: string;
-  notes?: string;
-}
-
 @Component({
   selector: 'app-dashboard',
   templateUrl: './dashboard.component.html',
@@ -61,42 +54,27 @@ interface DocumentMetadata {
     CardDescriptionComponent,
     CardContentComponent,
     BadgeComponent,
-    FileUploadComponent,
     InputComponent,
     FormFieldComponent,
     FormLabelComponent,
     FormDescriptionComponent,
     FormMessageComponent,
-    FileSizePipe
+    FileSizePipe,
+    UploadDialogComponent
   ]
 })
 export class DashboardComponent {
   // Danh sách văn bản
-  documents: Document[] = [];
-  selectedDocument: Document | null = null;
-  
-  // Upload state
-  selectedFiles: File[] = [];
-  documentMetadata: DocumentMetadata = {
-    type: '',
-    securityLevel: '',
-    department: ''
-  };
-
-  // Filter state
-  searchTerm: string = '';
-  statusFilter: string = '';
-  timeFilter: string = '';
-  filteredDocuments: Document[] = [
+  documents: Document[] = [
     {
       id: 'doc-001',
       name: 'employee_contract.docx',
       size: 24576,
       uploadTime: new Date('2025-09-05T09:15:00'),
       status: 'completed',
-      type: 'docx',
+      type: 'contract',
       securityLevel: 'confidential',
-      department: 'HR',
+      department: 'hr',
       notes: 'Contains employee personal data',
       sensitivityScore: 87,
       findings: [
@@ -120,9 +98,9 @@ export class DashboardComponent {
       size: 102400,
       uploadTime: new Date('2025-09-04T15:30:00'),
       status: 'analyzing',
-      type: 'xlsx',
-      securityLevel: 'high',
-      department: 'Finance',
+      type: 'report',
+      securityLevel: 'confidential',
+      department: 'finance',
       sensitivityScore: undefined
     },
     {
@@ -131,9 +109,10 @@ export class DashboardComponent {
       size: 52300,
       uploadTime: new Date('2025-09-03T11:00:00'),
       status: 'completed',
-      type: 'pdf',
-      securityLevel: 'medium',
-      department: 'Operations',
+      type: 'policy',
+      securityLevel: 'internal',
+      department: 'tech',
+      sensitivityScore: 45,
       findings: [
         {
           type: 'policy',
@@ -142,82 +121,42 @@ export class DashboardComponent {
           paragraph: 2
         }
       ]
-    },
-    {
-      id: 'doc-004',
-      name: 'marketing_plan_2026.docx',
-      size: 33450,
-      uploadTime: new Date('2025-09-01T08:45:00'),
-      status: 'error',
-      type: 'docx',
-      securityLevel: 'low',
-      department: 'Marketing',
-      notes: 'Upload failed due to corrupted file.'
-    },
-    {
-      id: 'doc-005',
-      name: 'customer_feedback.docx',
-      size: 28900,
-      uploadTime: new Date('2025-09-06T10:12:00'),
-      status: 'completed',
-      type: 'docx',
-      securityLevel: 'medium',
-      department: 'Customer Service',
-      sensitivityScore: 45,
-      findings: []
     }
   ];
 
-  onFilesSelected(files: File[]) {
-    this.selectedFiles = files;
-    // Reset metadata form
-    this.documentMetadata = {
-      type: '',
-      securityLevel: '',
-      department: ''
-    };
+  selectedDocument: Document | null = null;
+  showUploadDialog = false;
+  
+  // Filter state
+  searchTerm: string = '';
+  statusFilter: string = '';
+  timeFilter: string = '';
+  filteredDocuments: Document[] = [];
+
+  constructor() {
+    this.filterDocuments();
   }
 
-  isValidMetadata(): boolean {
-    return (
-      this.documentMetadata.type !== '' &&
-      this.documentMetadata.securityLevel !== '' &&
-      this.documentMetadata.department !== ''
-    );
-  }
-
-  cancelUpload() {
-    this.selectedFiles = [];
-    this.documentMetadata = {
-      type: '',
-      securityLevel: '',
-      department: ''
-    };
-  }
-
-  async uploadDocuments() {
-    for (const file of this.selectedFiles) {
+  handleUpload(event: {files: File[], metadata: any}) {
+    for (const file of event.files) {
       const newDoc: Document = {
         id: Math.random().toString(36).substr(2, 9),
         name: file.name,
         size: file.size,
         uploadTime: new Date(),
         status: 'analyzing',
-        type: this.documentMetadata.type,
-        securityLevel: this.documentMetadata.securityLevel,
-        department: this.documentMetadata.department,
-        notes: this.documentMetadata.notes
+        type: event.metadata.type,
+        securityLevel: event.metadata.securityLevel,
+        department: event.metadata.department,
+        notes: event.metadata.notes
       };
       
       this.documents.unshift(newDoc);
-      this.filterDocuments();
-      
-      // TODO: Gửi file và metadata lên server để phân tích
-      await this.analyzeDocument(newDoc, file);
+      this.analyzeDocument(newDoc, file);
     }
 
-    // Reset form sau khi upload
-    this.cancelUpload();
+    this.showUploadDialog = false;
+    this.filterDocuments();
   }
 
   private async analyzeDocument(doc: Document, file: File) {
@@ -308,54 +247,6 @@ export class DashboardComponent {
     }
   }
 
-  // Phương thức đếm số lượng tài liệu theo trạng thái
-  getDocumentCountByStatus(status: string): number {
-    return this.documents.filter(doc => doc.status === status).length;
-  }
-
-  // Phương thức đếm số lượng tài liệu có rủi ro (sensitivityScore > 70)
-  getDocumentsWithRisk(): number {
-    return this.documents.filter(doc => 
-      doc.status === 'completed' && 
-      doc.sensitivityScore && 
-      doc.sensitivityScore > 70
-    ).length;
-  }
-
-  // Phương thức lấy thống kê theo phòng ban
-  getDepartmentStats(): Array<{department: string, count: number}> {
-    const stats = new Map<string, number>();
-    
-    this.documents.forEach(doc => {
-      if (doc.department) {
-        stats.set(doc.department, (stats.get(doc.department) || 0) + 1);
-      }
-    });
-
-    return Array.from(stats.entries()).map(([department, count]) => ({
-      department,
-      count
-    }));
-  }
-
-  // Phương thức lấy tên phòng ban hiển thị
-  getDepartmentName(code: string): string {
-    const departments = {
-      'hr': 'Nhân sự',
-      'finance': 'Tài chính',
-      'tech': 'Kỹ thuật',
-      'sales': 'Kinh doanh',
-      'other': 'Khác'
-    };
-    return departments[code as keyof typeof departments] || code;
-  }
-
-  // Phương thức tính phần trăm
-  getPercentage(count: number): number {
-    if (this.documents.length === 0) return 0;
-    return Math.round((count / this.documents.length) * 100);
-  }
-
   // Phương thức lấy tên loại văn bản
   getDocumentTypeName(type: string): string {
     const types = {
@@ -403,5 +294,53 @@ export class DashboardComponent {
     if (score >= 60) return 'text-orange-600 font-medium';
     if (score >= 40) return 'text-yellow-600 font-medium';
     return 'text-green-600 font-medium';
+  }
+
+  // Phương thức đếm số lượng tài liệu theo trạng thái
+  getDocumentCountByStatus(status: string): number {
+    return this.documents.filter(doc => doc.status === status).length;
+  }
+
+  // Phương thức đếm số lượng tài liệu có rủi ro (sensitivityScore > 70)
+  getDocumentsWithRisk(): number {
+    return this.documents.filter(doc => 
+      doc.status === 'completed' && 
+      doc.sensitivityScore && 
+      doc.sensitivityScore > 70
+    ).length;
+  }
+
+  // Phương thức lấy thống kê theo phòng ban
+  getDepartmentStats(): Array<{department: string, count: number}> {
+    const stats = new Map<string, number>();
+    
+    this.documents.forEach(doc => {
+      if (doc.department) {
+        stats.set(doc.department, (stats.get(doc.department) || 0) + 1);
+      }
+    });
+
+    return Array.from(stats.entries()).map(([department, count]) => ({
+      department,
+      count
+    }));
+  }
+
+  // Phương thức lấy tên phòng ban hiển thị
+  getDepartmentName(code: string): string {
+    const departments = {
+      'hr': 'Nhân sự',
+      'finance': 'Tài chính',
+      'tech': 'Kỹ thuật',
+      'sales': 'Kinh doanh',
+      'other': 'Khác'
+    };
+    return departments[code as keyof typeof departments] || code;
+  }
+
+  // Phương thức tính phần trăm
+  getPercentage(count: number): number {
+    if (this.documents.length === 0) return 0;
+    return Math.round((count / this.documents.length) * 100);
   }
 }
