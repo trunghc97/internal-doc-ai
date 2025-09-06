@@ -22,18 +22,16 @@ public class DocumentController {
     @PostMapping
     public ResponseEntity<Document> uploadDocument(
             @RequestParam("file") MultipartFile file,
-            @RequestParam("sensitiveInfo") String sensitiveInfo,
             @AuthenticationPrincipal User user) throws Exception {
-        return ResponseEntity.ok(documentService.uploadDocument(file, user, sensitiveInfo));
+        return ResponseEntity.ok(documentService.uploadDocument(file, user));
     }
     
     @PostMapping("/test-upload")
     public ResponseEntity<Document> uploadDocumentFromTestFile(
             @RequestParam("filename") String filename,
-            @RequestParam(value = "sensitiveInfo", defaultValue = "Test file từ testFile directory") String sensitiveInfo,
             @AuthenticationPrincipal User user) throws Exception {
         log.info("Mock upload file từ testFile: {}", filename);
-        return ResponseEntity.ok(documentService.uploadDocumentFromTestFile(filename, user, sensitiveInfo));
+        return ResponseEntity.ok(documentService.uploadDocumentFromTestFile(filename, user));
     }
 
     @GetMapping
