@@ -1,5 +1,8 @@
 import { Injectable } from '@angular/core';
 
+// Declare JSEncrypt as any type since we don't have type definitions
+declare const JSEncrypt: any;
+
 @Injectable({
   providedIn: 'root'
 })
@@ -8,51 +11,38 @@ export class EncryptionService {
   async encrypt(publicKeyBase64: string, text: string): Promise<string> {
     try {
       console.log('Starting encryption process...');
-      console.log('Public key (base64):', publicKeyBase64);
+      
+      // Clean up public key
+      const cleanPublicKey = publicKeyBase64.replace(/[\n\r\s]/g, '');
+      console.log('Cleaned public key:', cleanPublicKey);
 
-      // Convert base64 to binary
-      const binaryDer = window.atob(publicKeyBase64);
-      const keyBytes = new Uint8Array(binaryDer.length);
-      for (let i = 0; i < binaryDer.length; i++) {
-        keyBytes[i] = binaryDer.charCodeAt(i);
+      // Format public key with header and footer
+      const formattedKey = 
+        '-----BEGIN PUBLIC KEY-----\n' +
+        cleanPublicKey +
+        '\n-----END PUBLIC KEY-----';
+
+      // Use JSEncrypt for RSA encryption
+      const encrypt = new JSEncrypt();
+      encrypt.setPublicKey(formattedKey);
+      console.log('Public key set:', formattedKey);
+
+      // Encrypt the data
+      console.log('Text to encrypt:', text);
+      const encrypted = encrypt.encrypt(text);
+      if (!encrypted) {
+        throw new Error('Encryption failed');
       }
-      console.log('Public key bytes:', keyBytes);
 
-      // Import public key
-      const publicKey = await window.crypto.subtle.importKey(
-        'spki',
-        keyBytes,
-        {
-          name: 'RSA-OAEP',
-          hash: { name: 'SHA-256' }
-        },
-        false,
-        ['encrypt']
-      );
-      console.log('Public key imported successfully');
-
-      // Prepare data for encryption
-      const textBytes = new TextEncoder().encode(text);
-      console.log('Text bytes:', textBytes);
-
-      // Encrypt data
-      const encrypted = await window.crypto.subtle.encrypt(
-        {
-          name: 'RSA-OAEP'
-        },
-        publicKey,
-        textBytes
-      );
       console.log('Encryption successful');
+      console.log('Encrypted data:', encrypted);
+      console.log('Encrypted length:', encrypted.length);
 
-      // Convert to base64
-      const encryptedBase64 = window.btoa(String.fromCharCode(...new Uint8Array(encrypted)));
-      console.log('Encrypted data (base64):', encryptedBase64);
-
-      return encryptedBase64;
-    } catch (error) {
-      console.error('Encryption failed:', error);
-      throw new Error('Failed to encrypt data');
+      return encrypted;
+    } catch (err: any) {
+      console.error('Encryption error:', err);
+      const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred';
+      throw new Error('Failed to encrypt data: ' + errorMessage);
     }
   }
 }

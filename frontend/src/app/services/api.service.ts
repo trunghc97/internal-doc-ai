@@ -60,14 +60,14 @@ export class ApiService {
 
   async login(data: LoginRequest): Promise<any> {
     try {
-      //const publicKeyResponse = await this.getPublicKey().toPromise();
-      const publicKey = `MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAkeynfKnC4SZd6kQRNB4B
-        oUYM1XOlKcgah/RTcE0MWeMtIT1zkF1dLRS2EXaBpTe4MYcJPM1hwYQsWavCpPwd
-        +SWKji/FhIYx4cVmRl34gb0f0tAJsFBpc6sUFrmRxlysw9l10WmZORypS/p6ie3V
-        4xjx83ys1eztH0CcNPuSrNy4RlGT0Mo+1IvshzV3ys/UKecBuQtI2XdSz9EJKgyy
-        48B15tEqoakE4FmhoD2ISNFq8l0tWF7Z94gXKg+SKS2jtQYHw4VtciRkA9UHEOlc
-        x8F2xkX+3TfGagyxkRAbuj2AYajzRjxQhl/aUBbxxKhiByaiQVT6/CnFSpAfqs9U
-        HwIDAQAB`;
+      // New public key
+      const publicKey = `MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAjiqfibx5l9CEkFieveIF
+        oZPvlIUZ4EpG/Qo2B+qKM4NMhPjT80i5hk3S6KUNgsZbS/+B5cT36ouy6EEKz2k5
+        pbeyU0gg6CxuaylbE9y7TW/D86nn2DUkZeHuL+EF7Wq/yIuHtqoskcLTciZEK1H2
+        BTSC+FklwZouJPA0D/OcAWL5A5W/HpAUGdmXIvpgWBjfTPowEqmc+dqa6PANZlx7
+        T58V2qbUM3aaGZUQdWCOCLG00QRRTYJ1kirgAFlGKaeI4TNxETJCGVaOVSfUssma
+        7YgfAaIANrqs0lEaXYAtgo6pN4lv2+HP+b40R2Sib6G3KKn2J/NjzXdvmnd/G5cp
+        OwIDAQAB`;
       const encryptedPassword = await this.encryptionService.encrypt(publicKey, data.password);
 
       // Convert Observable to Promise
@@ -82,17 +82,14 @@ export class ApiService {
 
   async register(data: RegisterRequest): Promise<any> {
     try {
-      // console.log('Getting public key...');
-      // const publicKeyResponse = await this.getPublicKey().toPromise();
-      // console.log('Public key response:', publicKeyResponse);
-
-      const publicKey = `MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAkeynfKnC4SZd6kQRNB4B
-        oUYM1XOlKcgah/RTcE0MWeMtIT1zkF1dLRS2EXaBpTe4MYcJPM1hwYQsWavCpPwd
-        +SWKji/FhIYx4cVmRl34gb0f0tAJsFBpc6sUFrmRxlysw9l10WmZORypS/p6ie3V
-        4xjx83ys1eztH0CcNPuSrNy4RlGT0Mo+1IvshzV3ys/UKecBuQtI2XdSz9EJKgyy
-        48B15tEqoakE4FmhoD2ISNFq8l0tWF7Z94gXKg+SKS2jtQYHw4VtciRkA9UHEOlc
-        x8F2xkX+3TfGagyxkRAbuj2AYajzRjxQhl/aUBbxxKhiByaiQVT6/CnFSpAfqs9U
-        HwIDAQAB`;
+      // New public key
+      const publicKey = `MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAjiqfibx5l9CEkFieveIF
+        oZPvlIUZ4EpG/Qo2B+qKM4NMhPjT80i5hk3S6KUNgsZbS/+B5cT36ouy6EEKz2k5
+        pbeyU0gg6CxuaylbE9y7TW/D86nn2DUkZeHuL+EF7Wq/yIuHtqoskcLTciZEK1H2
+        BTSC+FklwZouJPA0D/OcAWL5A5W/HpAUGdmXIvpgWBjfTPowEqmc+dqa6PANZlx7
+        T58V2qbUM3aaGZUQdWCOCLG00QRRTYJ1kirgAFlGKaeI4TNxETJCGVaOVSfUssma
+        7YgfAaIANrqs0lEaXYAtgo6pN4lv2+HP+b40R2Sib6G3KKn2J/NjzXdvmnd/G5cp
+        OwIDAQAB`;
       console.log('Encrypting password...');
       const encryptedPassword = await this.encryptionService.encrypt(publicKey, data.password);
       console.log('Password encrypted successfully');
