@@ -1,5 +1,10 @@
 server:
   port: 8080
+  servlet:
+    context-path: /
+  error:
+    include-message: always
+    include-binding-errors: always
 
 spring:
   datasource:
@@ -25,52 +30,41 @@ jwt:
   expiration: 86400000 # 24 hours
 
 rsa:
-  # Private key
   private-key-value: |
     -----BEGIN PRIVATE KEY-----
-    MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQCR7Kd8qcLhJl3q
-    RBE0HgGhRgzVc6UpyBqH9FNwTQxZ4y0hPXOQXV0tFLYRdoGlN7gxhwk8zWHBhCxZ
-    q8Kk/B35JYqOL8WEhjHhxWZGXfiBvR/S0AmwUGlzqxQWuZHGXKzDGXXRaZk5HKlL
-    +nqJ7dXjGPHzfKzV7O0fQJw0+5Ks3LhGUZPQyj7Ui+yHNXfKz9Qp5wG5C0jZd1LP
-    0QkqDLLjwHXm0SqhqQTgWaGgPYhI0WryXS1YXtn3iBcqD5IpLaO1BgfDhW1yJGQD
-    1QcQ7VzHwXbGRf7dN8ZqDLGREBu6PYBhqPNGPFCGX9pQFvHEqGIHJqJBVPr8KcVK
-    kB+qz1QfAgMBAAECggEABa0didGbQJHVvhGQC9kYE8PX3mLA0pFaQJSvYZzZ5FfS
-    Hs3RPrFIUy4ULwH9I5DzLPrpXz6yGGZYqj7YGEwgGqJG8J+1CBZzRbotXrEVKZ4e
-    TgIxZk5HxPVRvJcDGBUYEQ48XZIxyzQD0K3oLHjUC7TPjPUXzsz1dR3qGxCI1eRE
-    1xZLvQGPBkpf+HpvZxKJ1IuqPPZjsKzxkYD1mGxLaYx8zE4zqhD+/OVNc8MtFYZr
-    3PtXG5tvQoL7ZcyWi4wcGwEwYRTzqZF0XbwpqKLIkp1E4QRoI4B1aC+TGUIwDiQg
-    5uqdrCUxm6UzKA5Ig+qSKL4qCwIR6TQVeGQFtVyQAQKBgQDFJC7n2jqBQI3zTKzX
-    8qI2H7ZfGBuTkL2v1yEFKu4TBX5qwvOuwZy5PCbpKHRv0W7yNOuiY6XhQ8qTJaEX
-    NhXzjDBtKR9u3jU5g8b8S9l+ib9d5Az8lZWHDOlC4qRYQzY6X1BX5PIh5wR5KZKA
-    kV0GpBGrXWQV1r8L0JwBN7PwAQKBgQC9Vs0NyzQfR5y8jQhkttaTp0Lc4Rvytv6m
-    4qLXyJ7zv7SJHqXX9UJ8qZZF0dzwMEcH3U5jxzGvNjY9AjVqFt4ypB+1w0JVHPnx
-    lQZKEzCp3yLZOq0z9wqXEX/b7J0uQmLBUzWE8ALvybNXX7czXrvZLF7VyQxvgxF+
-    fvZyTtQXHwKBgQCbvIEzXJGKvhBd1Ut0iWzKF8TqUC3UvHhL4t8wmxDGXNhvqz4O
-    8yYEGhvxdgUKg8H5QJEFGQGGbZDVvqQqJ8XtZGmZFQhVHJCjHHMj9vppcPQHXmXG
-    VyZZX0PjGc9EQK3GxU/4FPgDZxPB8BSd6DgzQNJHpUq+8MzL0wf4UgwAAQKBgCgJ
-    9MOXPVJv1vWjJhWZxjEUPFZ6N1Zp0yqPWvQwkDVhGX/0jZK8B+JHb+BfYNGbpRVj
-    fA0V8f3P1c7eZgNvNSI2zOZFVBHLhwKJC6zFUXGGwqyKZ7L7dOvLJKH/8XRNFyGt
-    VGzHXXQQqKQh6qmZHkCwZEU3HUQaFpdjZkXNGXQtAoGAO6I8TuCmqBF0KyQXpGGe
-    rzJjh9GjIO8pwHT3KJn1r3oPC5yXyyGiYJQxHUh1Eh7vC7bRBxhUz0JBvj3marHX
-    h3ZQpHdJQYPPZwCj5mRdB/kK6DUjR4kJ3Kz1B6oPs5Dm3kvhsE+che+ARU2N2yEB
-    TqXh1FWiWvQwFQELxUQ0JuE=
+    MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQCOKp+JvHmX0ISQ
+    WJ694gWhk++UhRngSkb9CjYH6oozg0yE+NPzSLmGTdLopQ2CxltL/4HlxPfqi7Lo
+    QQrPaTmlt7JTSCDoLG5rKVsT3LtNb8PzqefYNSRl4e4v4QXtar/Ii4e2qiyRwtNy
+    JkQrUfYFNIL4WSXBmi4k8DQP85wBYvkDlb8ekBQZ2Zci+mBYGN9M+jASqZz52pro
+    8A1mXHtPnxXaptQzdpoZlRB1YI4IsbTRBFFNgnWSKuAAWUYpp4jhM3ERMkIZVo5V
+    J9SyyZrtiB8BogA2uqzSURpdgC2Cjqk3iW/b4c/5vjRHZKJvobcoqfYn82PNd2+a
+    d38blyk7AgMBAAECggEAAgm7YsKYbaQ4Gkei8u7oDMJtp0/nKI94CA2a668hjw59
+    TNSyWST8P+Aiu2IOWQcV7Pd7ObuCoFKjXG/+Qy3rfSQugsIgcqOca53ap+S8rKYD
+    BZ20bKWKYYmFHBuaNaaXnDzf068J14cW9+ZziLlykO2JSR0iDO30ZmQpIudnn59x
+    oN/7D83GPqdW2b1p/AzDuLy1m/kE3Ib8me6wSvPK+0BsdALPIBosOJuvho783nS2
+    OwP3peHz/2rieVphmyG5lRUHVsKLWMLOrup7q+q6zmTXp3n03iok49L6ROBd/JAD
+    5eN5KYlCcGampWPh/+fPIJ27pD6fUiFW6thtWWVFGQKBgQDCuJDelYBsQpvSDAKU
+    J3SICEoV5a61ji9UqyEs9LHIC3MrL2sdIj0KsG2ntva4zfbnaDgEZJWybWgfhrGC
+    gPnNprTynHoPyIZIBwmjyxNYZaUx0CvFVvGtjvidxVEUK1xU6NK3mbTWByj15eCY
+    tqCSNWcTuNbfmzsza4LeX9R4QwKBgQC66BO+q3Bf7JvGs/vS4DDejozbdFYYdJDx
+    ywNE0QNpi/9PO9n98Alg4B6EVaOenIepG1u4LHlC1pbpSILai0vZzKb6xFErAvod
+    x7zA8N37YOFqLVgprLDeB0x40ccMAgtf6hDDJ8QThHlv9kjwTY+lLMsxdfzj5/B4
+    n/Fw9edXqQKBgQCvk+jdK4UvGSiTz8yLdsA24PKcqAxPHTREbkJt3P5pWRmx+QHm
+    tTbBarCVp/70SJO3uVu5alEpIEnhE30AJfgZnZZPpRTTIocib2Yb0UNSU+UO85xk
+    Rq+JRf+bk442V5rb3UwTzX8n9jDS+UL5sMM80vZs7CCkY76P8QOCLHrTLQKBgAY5
+    D987SgSHljApcer1d+sRB/OOjgdGakUCo1s5MknjVV7H+VwRD97f12REjawMPiAN
+    PyKEqIznJCMkPOcV2DKqM60JuEIcWUOAkPJDksB520dztwm8LC9YQt2K7nuh3csV
+    ufUlb8vOj1SA+LC3hF7VfPZqnT7hTApYGOvP5CHxAoGAUWMVJBmYj1KplHvK9CJS
+    /yXnxWlBGhmGMEMoEz5AfmmcikfelztOUebY5Lg5hdoCFaoBCjA0hUalIQh6ICyb
+    rcTHz6k81nih3ewHJLC27RsrwezhzG5ImrZgTE8qKp3OxuCyAF7eplCeowT4+QIX
+    voH27HeOvMk9curfOLC6n0E=
     -----END PRIVATE KEY-----
-
-  # Public key
-  public-key-value: |
-    -----BEGIN PUBLIC KEY-----
-    MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAkeynfKnC4SZd6kQRNB4B
-    oUYM1XOlKcgah/RTcE0MWeMtIT1zkF1dLRS2EXaBpTe4MYcJPM1hwYQsWavCpPwd
-    +SWKji/FhIYx4cVmRl34gb0f0tAJsFBpc6sUFrmRxlysw9l10WmZORypS/p6ie3V
-    4xjx83ys1eztH0CcNPuSrNy4RlGT0Mo+1IvshzV3ys/UKecBuQtI2XdSz9EJKgyy
-    48B15tEqoakE4FmhoD2ISNFq8l0tWF7Z94gXKg+SKS2jtQYHw4VtciRkA9UHEOlc
-    x8F2xkX+3TfGagyxkRAbuj2AYajzRjxQhl/aUBbxxKhiByaiQVT6/CnFSpAfqs9U
-    HwIDAQAB
-    -----END PUBLIC KEY-----
 
 logging:
   level:
-    org.springframework.web: INFO
+    root: INFO
+    org.springframework.web: DEBUG
+    org.springframework.security: DEBUG
     com.docai: DEBUG
     org.hibernate.SQL: DEBUG
     org.hibernate.type.descriptor.sql.BasicBinder: TRACE
