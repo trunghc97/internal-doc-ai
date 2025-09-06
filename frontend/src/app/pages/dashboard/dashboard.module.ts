@@ -18,9 +18,6 @@ import {
 import { PointsCardComponent } from '../../components/molecules/points-card.component';
 
 @NgModule({
-  declarations: [
-    DashboardComponent
-  ],
   imports: [
     CommonModule,
     RouterModule,
@@ -32,7 +29,8 @@ import { PointsCardComponent } from '../../components/molecules/points-card.comp
     CardContentComponent,
     BadgeComponent,
     // Molecules components
-    PointsCardComponent
+    PointsCardComponent,
+    RouterModule.forChild([{ path: '', component: DashboardComponent }])    
   ]
 })
 export class DashboardModule { }

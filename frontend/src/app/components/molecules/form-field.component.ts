@@ -7,7 +7,8 @@ import { Component, Input } from '@angular/core';
       <ng-content></ng-content>
     </div>
   `,
-  styles: []
+  styles: [],
+  standalone: true,
 })
 export class FormFieldComponent {
   @Input() className = '';
@@ -20,7 +21,8 @@ export class FormFieldComponent {
       <ng-content></ng-content>
     </label>
   `,
-  styles: []
+  styles: [],
+  standalone: true,
 })
 export class FormLabelComponent {
   @Input() className = '';
@@ -33,7 +35,8 @@ export class FormLabelComponent {
       <ng-content></ng-content>
     </p>
   `,
-  styles: []
+  styles: [],
+  standalone: true,
 })
 export class FormDescriptionComponent {
   @Input() className = '';
@@ -46,7 +49,8 @@ export class FormDescriptionComponent {
       <ng-content></ng-content>
     </p>
   `,
-  styles: []
+  styles: [],
+  standalone: true,
 })
 export class FormMessageComponent {
   @Input() className = '';

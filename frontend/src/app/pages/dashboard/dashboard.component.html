@@ -1,108 +1,280 @@
-<div class="container max-w-mobile space-y-6 p-4">
-  <div class="space-y-2">
-    <h1 class="text-2xl font-bold">Xin chào!</h1>
-    <p class="text-gray-500">
-      Chào mừng bạn đến với chương trình Loyalty Points
-    </p>
+<div class="container mx-auto px-4 py-8">
+  <!-- Tiêu đề -->
+  <div class="mb-8">
+    <h1 class="text-3xl font-bold text-gray-900">Quản lý văn bản nội bộ</h1>
+    <p class="mt-2 text-gray-600">Hệ thống quản lý và phân tích văn bản với AI</p>
   </div>
 
-  <!-- Points Card -->
-  <app-points-card
-    [points]="points$ | async"
-    (onEarn)="onEarn()"
-    (onTransfer)="onTransfer()"
-  ></app-points-card>
-
-  <!-- Stats Cards -->
-  <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-    <app-card>
-      <app-card-header className="flex flex-row items-center space-x-4 pb-2">
-        <div class="flex h-12 w-12 items-center justify-center rounded-lg bg-blue-100">
-          <svg class="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
-          </svg>
-        </div>
-        <div>
-          <app-card-title className="text-base font-semibold">Quà tặng</app-card-title>
-          <p class="text-sm text-gray-500">Đổi điểm lấy quà</p>
-        </div>
-      </app-card-header>
-      <app-card-content>
-        <div class="text-2xl font-bold text-blue-600">5</div>
-        <p class="text-sm text-gray-500">Quà tặng khả dụng</p>
-      </app-card-content>
-    </app-card>
-
-    <app-card>
-      <app-card-header className="flex flex-row items-center space-x-4 pb-2">
-        <div class="flex h-12 w-12 items-center justify-center rounded-lg bg-blue-100">
-          <svg class="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v8a2 2 0 002 2h14a2 2 0 002-2V7a2 2 0 00-2-2h-3"/>
-          </svg>
-        </div>
-        <div>
-          <app-card-title className="text-base font-semibold">Voucher</app-card-title>
-          <p class="text-sm text-gray-500">Ưu đãi của bạn</p>
-        </div>
-      </app-card-header>
-      <app-card-content>
-        <div class="text-2xl font-bold text-blue-600">3</div>
-        <p class="text-sm text-gray-500">Voucher chưa sử dụng</p>
-      </app-card-content>
-    </app-card>
-  </div>
-
-  <!-- Voucher Grid -->
-  <div class="space-y-4">
-    <h2 class="text-lg font-semibold">Voucher nổi bật</h2>
-    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-      <app-card *ngFor="let voucher of vouchers" class="cursor-pointer" (click)="onRedeem(voucher.id)">
-        <app-card-header>
-          <app-card-title>{{ voucher.title }}</app-card-title>
-          <app-card-description>{{ voucher.description }}</app-card-description>
-        </app-card-header>
-        <app-card-content>
-          <div class="flex items-center justify-between">
-            <span class="text-sm text-gray-500">{{ voucher.points }} điểm</span>
-            <span class="text-sm text-gray-500">{{ voucher.expiryDate }}</span>
-          </div>
-        </app-card-content>
-      </app-card>
-    </div>
-  </div>
-
-  <!-- Recent Transactions -->
-  <div class="space-y-4">
-    <div class="flex items-center justify-between">
-      <h2 class="text-lg font-semibold">Giao dịch gần đây</h2>
-      <a routerLink="/transactions" class="text-blue-600 hover:text-blue-500 text-sm font-medium">
-        Xem tất cả →
-      </a>
-    </div>
-    <div class="space-y-2">
-      <div *ngFor="let transaction of transactions$ | async" class="flex items-center justify-between p-3 border rounded-lg">
-        <div>
-          <p class="font-medium">{{ transaction.description }}</p>
-          <p class="text-sm text-gray-500">{{ transaction.timestamp | date:'short' }}</p>
-        </div>
-        <div class="text-right">
-          <p class="font-semibold" [ngClass]="{
-            'text-green-600': transaction.type === 'EARN',
-            'text-red-600': transaction.type === 'REDEEM',
-            'text-blue-600': transaction.type === 'TRANSFER'
-          }">
-            {{ transaction.type === 'EARN' ? '+' : transaction.type === 'REDEEM' ? '-' : '' }}{{ transaction.amount }}
-          </p>
-          <app-badge [variant]="transaction.status === 'success' ? 'success' : 'destructive'">
-            {{ transaction.status }}
-          </app-badge>
-        </div>
+  <!-- Thanh tìm kiếm và lọc -->
+  <div class="mb-6">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div class="col-span-1">
+        <app-input
+          [placeholder]="'Tìm kiếm văn bản...'"
+          [(ngModel)]="searchTerm"
+          (ngModelChange)="filterDocuments()"
+        >
+          <span prefix>
+            <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+          </span>
+        </app-input>
+      </div>
+      <div class="col-span-1">
+        <app-form-field>
+          <app-form-label>Trạng thái</app-form-label>
+          <select
+            class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+            [(ngModel)]="statusFilter"
+            (ngModelChange)="filterDocuments()"
+          >
+            <option value="">Tất cả trạng thái</option>
+            <option value="analyzing">Đang phân tích</option>
+            <option value="completed">Hoàn thành</option>
+            <option value="error">Lỗi</option>
+          </select>
+        </app-form-field>
+      </div>
+      <div class="col-span-1">
+        <app-form-field>
+          <app-form-label>Thời gian</app-form-label>
+          <select
+            class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+            [(ngModel)]="timeFilter"
+            (ngModelChange)="filterDocuments()"
+          >
+            <option value="">Tất cả thời gian</option>
+            <option value="today">Hôm nay</option>
+            <option value="week">Tuần này</option>
+            <option value="month">Tháng này</option>
+          </select>
+        </app-form-field>
       </div>
     </div>
   </div>
 
-  <!-- Loading State -->
-  <div *ngIf="isLoading$ | async" class="flex justify-center py-8">
-    <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <!-- Khu vực upload văn bản -->
+    <div class="lg:col-span-2">
+      <app-card>
+        <app-card-header>
+          <app-card-title>Tải lên văn bản</app-card-title>
+          <app-card-description>
+            Hỗ trợ các định dạng: PDF, DOC, DOCX, TXT
+          </app-card-description>
+        </app-card-header>
+        <app-card-content>
+          <div class="space-y-6">
+            <app-file-upload
+              [accept]="'.pdf,.doc,.docx,.txt'"
+              (filesSelected)="onFilesSelected($event)"
+            ></app-file-upload>
+
+            <div *ngIf="selectedFiles.length > 0" class="mt-6">
+              <h3 class="text-lg font-medium text-gray-900 mb-4">Thông tin văn bản</h3>
+              
+              <div class="space-y-4">
+                <app-form-field>
+                  <app-form-label>Loại văn bản</app-form-label>
+                  <select
+                    class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                    [(ngModel)]="documentMetadata.type"
+                  >
+                    <option value="">Chọn loại văn bản</option>
+                    <option value="contract">Hợp đồng</option>
+                    <option value="report">Báo cáo</option>
+                    <option value="policy">Chính sách</option>
+                    <option value="other">Khác</option>
+                  </select>
+                </app-form-field>
+
+                <app-form-field>
+                  <app-form-label>Mức độ bảo mật</app-form-label>
+                  <select
+                    class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                    [(ngModel)]="documentMetadata.securityLevel"
+                  >
+                    <option value="">Chọn mức độ bảo mật</option>
+                    <option value="public">Công khai</option>
+                    <option value="internal">Nội bộ</option>
+                    <option value="confidential">Bảo mật</option>
+                    <option value="top_secret">Tối mật</option>
+                  </select>
+                </app-form-field>
+
+                <app-form-field>
+                  <app-form-label>Phòng ban</app-form-label>
+                  <select
+                    class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                    [(ngModel)]="documentMetadata.department"
+                  >
+                    <option value="">Chọn phòng ban</option>
+                    <option value="hr">Nhân sự</option>
+                    <option value="finance">Tài chính</option>
+                    <option value="tech">Kỹ thuật</option>
+                    <option value="sales">Kinh doanh</option>
+                    <option value="other">Khác</option>
+                  </select>
+                </app-form-field>
+
+                <app-form-field>
+                  <app-form-label>Ghi chú</app-form-label>
+                  <textarea
+                    class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                    rows="3"
+                    [(ngModel)]="documentMetadata.notes"
+                    placeholder="Nhập ghi chú về văn bản..."
+                  ></textarea>
+                </app-form-field>
+
+                <div class="flex justify-end space-x-3">
+                  <app-button
+                    [variant]="'ghost'"
+                    (click)="cancelUpload()"
+                  >
+                    Hủy
+                  </app-button>
+                  <app-button
+                    [variant]="'primary'"
+                    (click)="uploadDocuments()"
+                    [disabled]="!isValidMetadata()"
+                  >
+                    Tải lên
+                  </app-button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </app-card-content>
+      </app-card>
+
+      <!-- Danh sách văn bản đã upload -->
+      <div class="mt-6">
+        <app-card>
+          <app-card-header>
+            <app-card-title>Văn bản đã tải lên</app-card-title>
+          </app-card-header>
+          <app-card-content>
+            <div class="overflow-x-auto">
+              <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                  <tr>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Tên file
+                    </th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Thời gian
+                    </th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Trạng thái
+                    </th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Thao tác
+                    </th>
+                  </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                  <tr *ngFor="let doc of filteredDocuments">
+                    <td class="px-6 py-4 whitespace-nowrap">
+                      <div class="flex items-center">
+                        <div class="flex-shrink-0 h-10 w-10 flex items-center justify-center bg-gray-100 rounded-lg">
+                          <svg class="h-6 w-6 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                          </svg>
+                        </div>
+                        <div class="ml-4">
+                          <div class="text-sm font-medium text-gray-900">
+                            {{doc.name}}
+                          </div>
+                          <div class="text-sm text-gray-500">
+                            {{doc.size | fileSize}}
+                          </div>
+                        </div>
+                      </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {{doc.uploadTime | date:'short'}}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                      <app-badge
+                        [variant]="doc.status === 'analyzing' ? 'warning' : doc.status === 'completed' ? 'success' : 'error'"
+                        [type]="'soft'"
+                        [size]="'md'"
+                      >
+                        {{doc.status === 'analyzing' ? 'Đang phân tích' : doc.status === 'completed' ? 'Hoàn thành' : 'Lỗi'}}
+                      </app-badge>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm">
+                      <div class="flex space-x-2">
+                        <app-button
+                          [variant]="'ghost'"
+                          (click)="viewResults(doc)"
+                        >
+                          Xem kết quả
+                        </app-button>
+                        <app-button
+                          [variant]="'ghost'"
+                          [variant]="'destructive'"
+                          (click)="deleteDocument(doc)"
+                        >
+                          Xóa
+                        </app-button>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </app-card-content>
+        </app-card>
+      </div>
+    </div>
+
+    <!-- Khu vực hiển thị kết quả phân tích -->
+    <div class="lg:col-span-1">
+      <app-card>
+        <app-card-header>
+          <app-card-title>Kết quả phân tích</app-card-title>
+          <app-card-description>
+            Thông tin nhạy cảm được phát hiện
+          </app-card-description>
+        </app-card-header>
+        <app-card-content>
+          <div *ngIf="selectedDocument" class="space-y-4">
+            <div class="p-4 bg-yellow-50 rounded-lg border border-yellow-200">
+              <h3 class="font-medium text-yellow-800">Mức độ nhạy cảm</h3>
+              <div class="mt-2 flex items-center">
+                <div class="flex-1 bg-gray-200 rounded-full h-2">
+                  <div
+                    class="bg-yellow-500 h-2 rounded-full"
+                    [style.width.%]="selectedDocument.sensitivityScore"
+                  ></div>
+                </div>
+                <span class="ml-2 text-sm text-gray-600">
+                  {{selectedDocument.sensitivityScore}}%
+                </span>
+              </div>
+            </div>
+
+            <div *ngFor="let finding of selectedDocument?.findings" class="p-4 bg-red-50 rounded-lg border border-red-200">
+              <div class="font-medium text-red-800">{{finding.type}}</div>
+              <div class="mt-1 text-sm text-red-600">{{finding.description}}</div>
+              <div class="mt-2 text-sm text-gray-500">
+                <span class="font-medium">Vị trí:</span> Trang {{finding.page}}, đoạn {{finding.paragraph}}
+              </div>
+            </div>
+
+            <div *ngIf="!selectedDocument?.findings?.length" class="text-center text-gray-500 py-4">
+              Chưa phát hiện thông tin nhạy cảm
+            </div>
+          </div>
+
+          <div *ngIf="!selectedDocument" class="text-center text-gray-500 py-4">
+            Chọn một văn bản để xem kết quả phân tích
+          </div>
+        </app-card-content>
+      </app-card>
+    </div>
   </div>
 </div>
