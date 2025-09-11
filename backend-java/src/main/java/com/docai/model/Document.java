@@ -15,7 +15,7 @@ public class Document {
     @Column(nullable = false)
     private String filename;
 
-    @Column(columnDefinition = "TEXT")
+    @Column(columnDefinition = "text")
     private String content;
 
     @Column(nullable = false)
@@ -24,7 +24,7 @@ public class Document {
     @Column(nullable = false)
     private Long fileSize;
 
-    @Column(columnDefinition = "TEXT")
+    @Column(columnDefinition = "text")
     private String sensitiveInfo;
 
     @Column(name = "owner_user_id", nullable = false)
@@ -36,10 +36,10 @@ public class Document {
     @Column(nullable = false)
     private LocalDateTime lastModifiedAt;
 
-    @Column(name = "risk_score")
-    private Integer riskScore;
+    @Column(name = "risk_score", precision = 10)
+    private Double riskScore;
 
-    @Column(length = 20)
+    @Column(columnDefinition = "text")
     private String status;
 
     @PrePersist

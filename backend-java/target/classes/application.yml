@@ -70,8 +70,7 @@ file:
 logging:
   level:
     root: INFO
-    org.springframework.web: DEBUG
-    org.springframework.security: DEBUG
-    com.docai: DEBUG
+    org.springframework.web: INFO
+    org.springframework.security: INFO
+    com.docai: INFO
     org.hibernate.SQL: DEBUG
-    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
