@@ -11,22 +11,17 @@ import {
 } from '../atoms';
 
 interface Document {
-  id: string;
-  name: string;
-  size: number;
-  uploadTime: Date;
-  status: 'analyzing' | 'completed' | 'error';
-  type: string;
-  securityLevel: string;
-  department: string;
-  notes?: string;
-  sensitivityScore?: number;
-  findings?: Array<{
-    type: string;
-    description: string;
-    page: number;
-    paragraph: number;
-  }>;
+  id: number;
+  filename: string;
+  content: string;
+  fileSize: number;
+  mimeType: string;
+  sensitiveInfo: string;
+  ownerUserId: number;
+  uploadedAt: Date;
+  lastModifiedAt: Date;
+  riskScore: number;
+  status: string;
 }
 
 @Component({
@@ -50,7 +45,7 @@ interface Document {
           <div class="flex justify-between items-center mb-6">
             <div>
               <h2 class="text-xl font-semibold text-gray-900">Chi tiết tài liệu</h2>
-              <p class="mt-1 text-sm text-gray-500">{{document.name}}</p>
+              <p class="mt-1 text-sm text-gray-500">{{document.filename}}</p>
             </div>
             <button
               class="text-gray-400 hover:text-gray-500"
@@ -69,11 +64,11 @@ interface Document {
               <div class="space-y-4">
                 <div>
                   <h3 class="text-sm font-medium text-gray-500">Thời gian tải lên</h3>
-                  <p class="mt-1 text-sm text-gray-900">{{document.uploadTime | date:'medium'}}</p>
+                  <p class="mt-1 text-sm text-gray-900">{{document.uploadedAt | date:'medium'}}</p>
                 </div>
                 <div>
                   <h3 class="text-sm font-medium text-gray-500">Kích thước</h3>
-                  <p class="mt-1 text-sm text-gray-900">{{formatFileSize(document.size)}}</p>
+                  <p class="mt-1 text-sm text-gray-900">{{formatFileSize(document.fileSize)}}</p>
                 </div>
                 <div>
                   <h3 class="text-sm font-medium text-gray-500">Loại văn bản</h3>
@@ -83,7 +78,7 @@ interface Document {
                       [type]="'soft'"
                       [size]="'sm'"
                     >
-                      {{getDocumentTypeName(document.type)}}
+                      {{getDocumentTypeName(document.mimeType)}}
                     </app-badge>
                   </div>
                 </div>
@@ -95,7 +90,7 @@ interface Document {
                       [type]="'soft'"
                       [size]="'sm'"
                     >
-                      {{getDepartmentName(document.department)}}
+                      {{document.sensitiveInfo || 'N/A'}}
                     </app-badge>
                   </div>
                 </div>
@@ -121,13 +116,13 @@ interface Document {
                       [type]="'soft'"
                       [size]="'sm'"
                     >
-                      {{getSecurityLevelName(document.securityLevel)}}
+                      {{document.status}}
                     </app-badge>
                   </div>
                 </div>
                 <div>
                   <h3 class="text-sm font-medium text-gray-500">Ghi chú</h3>
-                  <p class="mt-1 text-sm text-gray-900">{{document.notes || 'Không có ghi chú'}}</p>
+                  <p class="mt-1 text-sm text-gray-900">{{document.sensitiveInfo || 'Không có thông tin nhạy cảm'}}</p>
                 </div>
               </div>
             </div>
@@ -143,28 +138,26 @@ interface Document {
                   <div class="flex-1 bg-gray-200 rounded-full h-2">
                     <div
                       class="h-2 rounded-full"
-                      [style.width.%]="document.sensitivityScore"
-                      [class]="getSensitivityScoreClass(document.sensitivityScore || 0)"
+                      [style.width.%]="document.riskScore"
+                      [class]="getSensitivityScoreClass(document.riskScore || 0)"
                     ></div>
                   </div>
-                  <span class="ml-2 text-sm" [class]="getSensitivityTextClass(document.sensitivityScore || 0)">
-                    {{document.sensitivityScore}}%
+                  <span class="ml-2 text-sm" [class]="getSensitivityTextClass(document.riskScore || 0)">
+                    {{document.riskScore}}%
                   </span>
                 </div>
               </div>
 
-              <!-- Danh sách phát hiện -->
+              <!-- Thông tin phân tích -->
               <div class="space-y-4">
-                <div *ngFor="let finding of document.findings" class="p-4 bg-red-50 rounded-lg border border-red-200">
-                  <div class="font-medium text-red-800">{{finding.type}}</div>
-                  <div class="mt-1 text-sm text-red-600">{{finding.description}}</div>
-                  <div class="mt-2 text-sm text-gray-500">
-                    <span class="font-medium">Vị trí:</span> Trang {{finding.page}}, đoạn {{finding.paragraph}}
+                <div class="p-4 bg-blue-50 rounded-lg border border-blue-200">
+                  <div class="font-medium text-blue-800">Kết quả phân tích</div>
+                  <div class="mt-1 text-sm text-blue-600">
+                    Tài liệu đã được phân tích với điểm rủi ro: {{document.riskScore}}%
                   </div>
-                </div>
-
-                <div *ngIf="!document.findings?.length" class="text-center text-gray-500 py-4">
-                  Chưa phát hiện thông tin nhạy cảm
+                  <div class="mt-2 text-sm text-gray-500">
+                    <span class="font-medium">Trạng thái:</span> {{document.status}}
+                  </div>
                 </div>
               </div>
             </div>

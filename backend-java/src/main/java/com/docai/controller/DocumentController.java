@@ -28,14 +28,6 @@ public class DocumentController {
         return ResponseEntity.ok(documentService.uploadDocument(file, user));
     }
     
-    // @PostMapping("/test-upload")
-    // public ResponseEntity<Document> uploadDocumentFromTestFile(
-    //         @RequestParam("filename") String filename,
-    //         @AuthenticationPrincipal User user) throws Exception {
-    //     log.info("Mock upload file từ testFile: {}", filename);
-    //     return ResponseEntity.ok(documentService.uploadDocumentFromTestFile(filename, user));
-    // }
-
     @GetMapping
     public ResponseEntity<Page<Document>> getDocuments(
             @AuthenticationPrincipal User user,

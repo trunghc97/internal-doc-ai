@@ -29,22 +29,17 @@ import {
 } from '../../components/molecules';
 
 interface Document {
-  id: string;
-  name: string;
-  size: number;
-  uploadTime: Date;
-  status: 'analyzing' | 'completed' | 'error';
-  type: string;
-  securityLevel: string;
-  department: string;
-  notes?: string;
-  sensitivityScore?: number;
-  findings?: Array<{
-    type: string;
-  description: string;
-    page: number;
-    paragraph: number;
-  }>;
+  id: number;
+  filename: string;
+  content: string;
+  fileSize: number;
+  mimeType: string;
+  sensitiveInfo: string;
+  ownerUserId: number;
+  uploadedAt: Date;
+  lastModifiedAt: Date;
+  riskScore: number;
+  status: string;
 }
 
 @Component({
@@ -77,64 +72,7 @@ interface Document {
 })
 export class DashboardComponent implements OnInit {
   // Danh sách văn bản
-  documents: Document[] = [
-    {
-      id: 'doc-001',
-      name: 'employee_contract.docx',
-      size: 24576,
-      uploadTime: new Date('2025-09-05T09:15:00'),
-      status: 'completed',
-      type: 'contract',
-      securityLevel: 'confidential',
-      department: 'hr',
-      notes: 'Contains employee personal data',
-      sensitivityScore: 87,
-      findings: [
-        {
-          type: 'PII',
-          description: 'Detected phone number',
-          page: 2,
-          paragraph: 3
-        },
-        {
-          type: 'PII',
-          description: 'Detected national ID',
-          page: 3,
-          paragraph: 1
-        }
-      ]
-    },
-    {
-      id: 'doc-002',
-      name: 'financial_report_q2.xlsx',
-      size: 102400,
-      uploadTime: new Date('2025-09-04T15:30:00'),
-      status: 'analyzing',
-      type: 'report',
-      securityLevel: 'confidential',
-      department: 'finance',
-      sensitivityScore: undefined
-    },
-    {
-      id: 'doc-003',
-      name: 'internal_policy.pdf',
-      size: 52300,
-      uploadTime: new Date('2025-09-03T11:00:00'),
-      status: 'completed',
-      type: 'policy',
-      securityLevel: 'internal',
-      department: 'tech',
-      sensitivityScore: 45,
-      findings: [
-        {
-          type: 'policy',
-          description: 'Sensitive compliance policy content',
-          page: 5,
-          paragraph: 2
-        }
-      ]
-    }
-  ];
+  documents: Document[] = [];
 
   selectedDocument: Document | null = null;
   previewDocuments: Document | null = null;
@@ -219,15 +157,17 @@ export class DashboardComponent implements OnInit {
   private uploadSingleFile(file: File, metadata: DocumentMetadata) {
     // Tạo document tạm thời để hiển thị trong UI
     const tempDoc: Document = {
-      id: 'temp-' + Math.random().toString(36).substr(2, 9),
-      name: file.name,
-      size: file.size,
-      uploadTime: new Date(),
-      status: 'analyzing',
-      type: metadata.type,
-      securityLevel: metadata.securityLevel,
-      department: metadata.department,
-      notes: metadata.notes
+      id: -1,
+      filename: file.name,
+      content: '',
+      fileSize: file.size,
+      mimeType: file.type,
+      sensitiveInfo: '',
+      ownerUserId: -1,
+      uploadedAt: new Date(),
+      lastModifiedAt: new Date(),
+      riskScore: 0,
+      status: 'PENDING'
     };
 
     // Thêm vào danh sách để hiển thị ngay
@@ -242,12 +182,10 @@ export class DashboardComponent implements OnInit {
         if (index !== -1) {
           this.documents[index] = {
             ...response,
-            uploadTime: new Date(response.uploadTime)
+            uploadedAt: new Date(response.uploadedAt || new Date()),
+            lastModifiedAt: new Date(response.lastModifiedAt || new Date())
           };
           this.filterDocuments();
-          
-          // Bắt đầu polling để kiểm tra kết quả phân tích
-          this.pollAnalysisResult(response.id);
         }
       },
       error: (error) => {
@@ -255,22 +193,21 @@ export class DashboardComponent implements OnInit {
         // Cập nhật trạng thái lỗi
         const index = this.documents.findIndex(doc => doc.id === tempDoc.id);
         if (index !== -1) {
-          this.documents[index].status = 'error';
+          this.documents[index].status = 'ERROR';
           this.filterDocuments();
         }
       }
     });
   }
 
-  private pollAnalysisResult(documentId: string) {
+  private pollAnalysisResult(documentId: number) {
     const pollInterval = setInterval(() => {
-      this.apiService.getDocumentAnalysis(documentId).subscribe({
+      this.apiService.getDocumentAnalysis(documentId.toString()).subscribe({
         next: (analysis) => {
           const index = this.documents.findIndex(doc => doc.id === documentId);
           if (index !== -1) {
-            this.documents[index].status = 'completed';
-            this.documents[index].sensitivityScore = analysis.sensitivityScore;
-            this.documents[index].findings = analysis.findings;
+            this.documents[index].status = 'COMPLETED';
+            this.documents[index].riskScore = analysis.sensitivityScore;
             this.filterDocuments();
             clearInterval(pollInterval);
           }
@@ -278,11 +215,10 @@ export class DashboardComponent implements OnInit {
         error: (error) => {
           // Nếu phân tích chưa xong, tiếp tục polling
           if (error.status !== 404) {
-            console.error('Error getting analysis:', error);
             clearInterval(pollInterval);
             const index = this.documents.findIndex(doc => doc.id === documentId);
             if (index !== -1) {
-              this.documents[index].status = 'error';
+              this.documents[index].status = 'ERROR';
               this.filterDocuments();
             }
           }
@@ -298,30 +234,14 @@ export class DashboardComponent implements OnInit {
 
   private async analyzeDocument(doc: Document, file: File) {
     try {
-      // TODO: Implement actual API call
-      // Giả lập phân tích với timeout
+      // Simulate analysis delay
       await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      doc.status = 'completed';
-      doc.sensitivityScore = Math.floor(Math.random() * 100);
-      doc.findings = [
-        {
-          type: 'Thông tin cá nhân',
-          description: 'Phát hiện số CMND/CCCD trong văn bản',
-          page: 1,
-          paragraph: 2
-        },
-        {
-          type: 'Thông tin tài chính',
-          description: 'Phát hiện thông tin về số tài khoản ngân hàng',
-          page: 2,
-          paragraph: 4
-        }
-      ];
+
+      doc.status = 'COMPLETED';
+      doc.riskScore = Math.floor(Math.random() * 100);
       this.filterDocuments();
     } catch (error) {
-      doc.status = 'error';
-      console.error('Error analyzing document:', error);
+      doc.status = 'ERROR';
     }
   }
 
@@ -332,9 +252,9 @@ export class DashboardComponent implements OnInit {
     if (this.searchTerm) {
       const term = this.searchTerm.toLowerCase();
       filtered = filtered.filter(doc => 
-        doc.name.toLowerCase().includes(term) ||
-        doc.type.toLowerCase().includes(term) ||
-        doc.department.toLowerCase().includes(term)
+        doc.filename.toLowerCase().includes(term) ||
+        doc.mimeType.toLowerCase().includes(term) ||
+        doc.sensitiveInfo.toLowerCase().includes(term)
       );
     }
 
@@ -352,7 +272,7 @@ export class DashboardComponent implements OnInit {
       const thisMonth = new Date(now.getFullYear(), now.getMonth(), 1);
 
       filtered = filtered.filter(doc => {
-        const docDate = new Date(doc.uploadTime);
+        const docDate = new Date(doc.uploadedAt);
         switch (this.timeFilter) {
           case 'today':
             return docDate >= today;
@@ -406,8 +326,8 @@ export class DashboardComponent implements OnInit {
 
   deleteDocument(doc: Document) {
     if (confirm('Bạn có chắc chắn muốn xóa tài liệu này?')) {
-      // Nếu là document tạm thời, chỉ xóa khỏi UI
-      if (doc.id.startsWith('temp-')) {
+      // Nếu là document tạm thời (id âm), chỉ xóa khỏi UI
+      if (doc.id < 0) {
         const index = this.documents.findIndex(d => d.id === doc.id);
         if (index !== -1) {
           this.documents.splice(index, 1);
@@ -420,11 +340,11 @@ export class DashboardComponent implements OnInit {
       }
 
       // Gọi API xóa
-      this.apiService.deleteDocument(doc.id).subscribe({
+      this.apiService.deleteDocument(doc.id.toString()).subscribe({
         next: () => {
           this.notificationService.success(
             'Xóa thành công',
-            `Tài liệu "${doc.name}" đã được xóa.`
+            `Tài liệu "${doc.filename}" đã được xóa.`
           );
           const index = this.documents.findIndex(d => d.id === doc.id);
           if (index !== -1) {
@@ -436,7 +356,6 @@ export class DashboardComponent implements OnInit {
           }
         },
         error: (error) => {
-          console.error('Error deleting document:', error);
           this.notificationService.error(
             'Lỗi xóa tài liệu',
             'Không thể xóa tài liệu. Vui lòng thử lại.'
@@ -813,41 +732,44 @@ export class DashboardComponent implements OnInit {
     return this.authService.user;
   }
 
-  // Phương thức đếm số lượng tài liệu có rủi ro (sensitivityScore > 70)
+  // Phương thức đếm số lượng tài liệu có rủi ro (riskScore > 70)
   getDocumentsWithRisk(): number {
-    return this.documents.filter(doc => 
-      doc.status === 'completed' && 
-      doc.sensitivityScore && 
-      doc.sensitivityScore > 70
+    return this.documents.filter(doc =>
+      doc.status === 'COMPLETED' &&
+      doc.riskScore &&
+      doc.riskScore > 70
     ).length;
   }
 
-  // Phương thức lấy thống kê theo phòng ban
-  getDepartmentStats(): Array<{department: string, count: number}> {
+  // Phương thức lấy thống kê theo MIME type
+  getMimeTypeStats(): Array<{mimeType: string, count: number}> {
     const stats = new Map<string, number>();
-    
+
     this.documents.forEach(doc => {
-      if (doc.department) {
-        stats.set(doc.department, (stats.get(doc.department) || 0) + 1);
+      if (doc.mimeType) {
+        stats.set(doc.mimeType, (stats.get(doc.mimeType) || 0) + 1);
       }
     });
 
-    return Array.from(stats.entries()).map(([department, count]) => ({
-      department,
+    return Array.from(stats.entries()).map(([mimeType, count]) => ({
+      mimeType,
       count
     }));
   }
 
-  // Phương thức lấy tên phòng ban hiển thị
-  getDepartmentName(code: string): string {
-    const departments = {
-      'hr': 'Nhân sự',
-      'finance': 'Tài chính',
-      'tech': 'Kỹ thuật',
-      'sales': 'Kinh doanh',
-      'other': 'Khác'
+  // Phương thức lấy tên MIME type hiển thị
+  getMimeTypeName(mimeType: string): string {
+    const mimeTypes = {
+      'application/pdf': 'PDF',
+      'application/msword': 'Word',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document': 'Word',
+      'application/vnd.ms-excel': 'Excel',
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': 'Excel',
+      'application/vnd.ms-powerpoint': 'PowerPoint',
+      'application/vnd.openxmlformats-officedocument.presentationml.presentation': 'PowerPoint',
+      'text/plain': 'Text'
     };
-    return departments[code as keyof typeof departments] || code;
+    return mimeTypes[mimeType as keyof typeof mimeTypes] || mimeType;
   }
 
   // Phương thức tính phần trăm

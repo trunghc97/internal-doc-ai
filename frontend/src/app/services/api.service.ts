@@ -33,15 +33,17 @@ export interface DocumentMetadata {
 }
 
 export interface DocumentUploadResponse {
-  id: string;
-  name: string;
-  size: number;
-  uploadTime: Date;
-  status: 'analyzing' | 'completed' | 'error';
-  type: string;
-  securityLevel: string;
-  department: string;
-  notes?: string;
+  id: number;
+  filename: string;
+  content: string;
+  fileSize: number;
+  mimeType: string;
+  sensitiveInfo: string;
+  ownerUserId: number;
+  uploadedAt: Date;
+  lastModifiedAt: Date;
+  riskScore: number;
+  status: string;
 }
 
 export interface DocumentAnalysisResult {
@@ -224,31 +226,12 @@ export class ApiService {
   uploadDocument(file: File, metadata: DocumentMetadata): Observable<DocumentUploadResponse> {
     const formData = new FormData();
     formData.append('file', file);
-    
-    // Tạo sensitiveInfo từ metadata và tên file
-    let sensitiveInfo = `File: ${file.name}`;
-    if (metadata.notes && metadata.notes.trim()) {
-      sensitiveInfo += `; Notes: ${metadata.notes.trim()}`;
-    }
-    if (metadata.department) {
-      sensitiveInfo += `; Department: ${metadata.department}`;
-    }
-    if (metadata.type) {
-      sensitiveInfo += `; Type: ${metadata.type}`;
-    }
-    if (metadata.securityLevel) {
-      sensitiveInfo += `; Security: ${metadata.securityLevel}`;
-    }
-    
-    formData.append('sensitiveInfo', sensitiveInfo);
-    console.log('Sending upload request with sensitiveInfo:', sensitiveInfo);
-
     return this.http.post<DocumentUploadResponse>(`${this.baseUrl}/documents`, formData)
       .pipe(catchError(this.handleError.bind(this)));
   }
 
   getDocuments(page: number = 0, size: number = 20): Observable<PaginatedResponse<any> | any[]> {
-    return this.http.get<PaginatedResponse<any> | any[]>(`${this.baseUrl}/documents/with-permission?page=${page}&size=${size}`)
+    return this.http.get<PaginatedResponse<any> | any[]>(`${this.baseUrl}/documents?page=${page}&size=${size}`)
       .pipe(catchError(this.handleError.bind(this)));
   }
 
@@ -288,8 +271,8 @@ export class ApiService {
       .pipe(catchError(this.handleError.bind(this)));
   }
 
-  getSharedDocuments(): Observable<any[]> {
-    return this.http.get<any[]>(`${this.baseUrl}/documents/shared`)
+  getSharedDocuments(page: number = 0, size: number = 20): Observable<PaginatedResponse<any>> {
+    return this.http.get<PaginatedResponse<any>>(`${this.baseUrl}/documents?page=${page}&size=${size}`)
       .pipe(catchError(this.handleError.bind(this)));
   }
 

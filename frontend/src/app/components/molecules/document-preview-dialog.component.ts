@@ -12,15 +12,17 @@ import {
 import { ApiService } from '../../services/api.service';
 
 interface Document {
-  id: string;
-  name: string;
-  size: number;
-  uploadTime: Date;
-  status: 'analyzing' | 'completed' | 'error';
-  type: string;
-  securityLevel: string;
-  department: string;
-  notes?: string;
+  id: number;
+  filename: string;
+  content: string;
+  fileSize: number;
+  mimeType: string;
+  sensitiveInfo: string;
+  ownerUserId: number;
+  uploadedAt: Date;
+  lastModifiedAt: Date;
+  riskScore: number;
+  status: string;
 }
 declare const docx: any;
 
@@ -43,7 +45,7 @@ declare const docx: any;
         <div class="flex justify-between items-center p-6 border-b">
           <div>
             <h2 class="text-xl font-semibold text-gray-900">Preview tài liệu</h2>
-            <p class="mt-1 text-sm text-gray-500">{{document.name}}</p>
+            <p class="mt-1 text-sm text-gray-500">{{document.filename}}</p>
           </div>
           <div class="flex items-center space-x-2">
             <!-- Nút tải xuống -->
@@ -135,10 +137,10 @@ declare const docx: any;
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                   </svg>
                 </div>
-                <h3 class="text-xl font-semibold text-gray-900">{{document.name}}</h3>
+                <h3 class="text-xl font-semibold text-gray-900">{{document.filename}}</h3>
                 <p class="mt-2 text-sm text-gray-500">
-                  Định dạng: {{getFileExtension(document.name).toUpperCase()}} • 
-                  Kích thước: {{formatFileSize(document.size)}}
+                  Định dạng: {{getFileExtension(document.filename).toUpperCase()}} •
+                  Kích thước: {{formatFileSize(document.fileSize)}}
                 </p>
               </div>
 
@@ -150,7 +152,7 @@ declare const docx: any;
                 </svg>
                 <h3 class="mt-2 text-sm font-medium text-gray-900">Preview không khả dụng</h3>
                 <p class="mt-1 text-sm text-gray-500">
-                  Định dạng {{getFileExtension(document.name).toUpperCase()}} chưa hỗ trợ preview trực tiếp.
+                  Định dạng {{getFileExtension(document.filename).toUpperCase()}} chưa hỗ trợ preview trực tiếp.
                 </p>
                 <div class="mt-6">
                   <app-button
@@ -268,11 +270,11 @@ export class DocumentPreviewDialogComponent implements OnInit, AfterViewInit {
   }
 
   get isPDF(): boolean {
-    return this.getFileExtension(this.document.name) === 'pdf';
+    return this.getFileExtension(this.document.filename) === 'pdf';
   }
 
   get isDocx(): boolean {
-    const ext = this.getFileExtension(this.document.name);
+    const ext = this.getFileExtension(this.document.filename);
     return ext === 'docx' || ext === 'doc';
   }
 
@@ -306,7 +308,7 @@ export class DocumentPreviewDialogComponent implements OnInit, AfterViewInit {
 
     if (this.isPDF) {
       // Tải PDF để preview
-      this.apiService.downloadDocument(this.document.id).subscribe({
+      this.apiService.downloadDocument(this.document.id.toString()).subscribe({
         next: (blob) => {
           const url = URL.createObjectURL(blob);
           this.previewUrl = this.sanitizer.bypassSecurityTrustResourceUrl(url);
@@ -321,7 +323,7 @@ export class DocumentPreviewDialogComponent implements OnInit, AfterViewInit {
       });
     } else if (this.isDocx && this.isDocxLoaded) {
       // Tải DOCX để preview
-      this.apiService.downloadDocument(this.document.id).subscribe({
+      this.apiService.downloadDocument(this.document.id.toString()).subscribe({
         next: (blob) => {
           this.renderDocx(blob);
         },
@@ -377,12 +379,12 @@ export class DocumentPreviewDialogComponent implements OnInit, AfterViewInit {
   }
 
   downloadDocument() {
-    this.apiService.downloadDocument(this.document.id).subscribe({
+    this.apiService.downloadDocument(this.document.id.toString()).subscribe({
       next: (blob) => {
         const url = URL.createObjectURL(blob);
         const link = document.createElement('a');
         link.href = url;
-        link.download = this.document.name;
+        link.download = this.document.filename;
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);

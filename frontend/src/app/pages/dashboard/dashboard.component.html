@@ -620,20 +620,20 @@
                         </div>
                         <div class="ml-4">
                           <div class="text-sm font-medium text-gray-900">
-                            {{doc.name}}
+                            {{doc.filename}}
                           </div>
                           <div class="text-xs text-gray-500 mt-1">
                             <span class="inline-flex items-center">
                               <svg class="h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                               </svg>
-                              {{doc.uploadTime | date:'short'}}
+                              {{doc.uploadedAt | date:'short'}}
                             </span>
                             <span class="inline-flex items-center ml-3">
                               <svg class="h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4" />
                               </svg>
-                              {{doc.size | fileSize}}
+                              {{doc.fileSize | fileSize}}
                             </span>
                           </div>
                         </div>
@@ -645,7 +645,7 @@
                         [type]="'soft'"
                         [size]="'sm'"
                       >
-                        {{getDocumentTypeName(doc.type)}}
+                        {{getDocumentTypeName(doc.mimeType)}}
                       </app-badge>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">
@@ -654,7 +654,7 @@
                         [type]="'soft'"
                         [size]="'sm'"
                       >
-                        {{getDepartmentName(doc.department)}}
+                        {{doc.sensitiveInfo || 'N/A'}}
                       </app-badge>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">
@@ -662,7 +662,7 @@
                         [type]="'soft'"
                         [size]="'sm'"
                       >
-                        {{getSecurityLevelName(doc.securityLevel)}}
+                        {{doc.status}}
                       </app-badge>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">
@@ -679,11 +679,11 @@
                         <div class="flex-1 h-2 bg-gray-200 rounded-full">
                           <div
                             class="h-2 rounded-full"
-                            [style.width.%]="doc.sensitivityScore"
+                            [style.width.%]="doc.riskScore"
                           ></div>
                         </div>
                         <span class="ml-2 text-sm" >
-                          {{doc.sensitivityScore}}%
+                          {{doc.riskScore}}%
                         </span>
                       </div>
                       <span *ngIf="doc.status !== 'completed'" class="text-gray-400 text-sm">
